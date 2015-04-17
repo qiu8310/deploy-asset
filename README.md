@@ -47,9 +47,9 @@ da(folder, globPatterns, options, function(err, fileMap) {
 
 [grunt-deploy-asset](https://github.com/qiu8310/grunt-deploy-asset)
 
-## API
+## Options
 
-[Click Here](https://qiu8310.github.io/deploy-asset/global.html#da)
+[Click Here To See All Options](https://qiu8310.github.io/deploy-asset/global.html#da)
 
 ## 注意事项
 
