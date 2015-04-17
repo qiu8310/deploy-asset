@@ -6,6 +6,8 @@
  * Licensed under the MIT license.
  */
 
+/* jshint -W100 */
+
 'use strict';
 
 var assert = require('assert'),
@@ -315,16 +317,3 @@ function da(dir, globPatterns, opts, callback) {
 da.Uploader = Uploader;
 
 module.exports = da;
-
-
-
-//da('.', '{*.json,*/*.json,*.html,*/*.html,*/*/*.html}', {
-//  deep: 3, excludes: '*/global.html', prefix: 'b-',
-//  dry: true,
-//  uploadOptions: {
-//    ak: 'MojRHbkKO0KqF3WLj_boOvUtM-IUI28jAApDJcHt',
-//    sk: 'F4kKZbKzuSJjYkAlQel8zgL5k28NnYb99uggj_tz',
-//    bucket: 'liulishuo',
-//    domain: '7narj5.com1.z0.glb.clouddn.com'
-//  }
-//});
