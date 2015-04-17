@@ -27,7 +27,7 @@ if test $# -gt 0; then
   git-changelog -t $1 \
     && git-release $1 \
     && sh 'publish docs to gh-pages branch' \
-    && sh ./publish_docs.sh \
+    && sh './publish_docs.sh' \
     && echo 'npm publish ... ' \
     && npm publish
 else
