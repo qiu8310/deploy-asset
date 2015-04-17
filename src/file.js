@@ -38,7 +38,7 @@ var TYPE = {
 
 /**
  * 所有文件的 hash，hash 的 key 是文件路径， value 是 {@link File} 对象
- *
+ * @private
  * @type {Object}
  */
 var MAP = {};

@@ -18,9 +18,10 @@
     "deploy-asset",
     "deploy",
     "asset",
-    "cdn",
-    "web-files",
     "web",
+    "web-deploy",
+    "cdn",
+    "server-deploy",
     "static"
   ],
   "dependencies": {
@@ -55,7 +56,8 @@
     "sinon": "^1.14.1"
   },
   "bin": {
-    "deploy-asset": "cli.js"
+    "deploy-asset": "cli.js",
+    "da": "cli.js"
   },
   "scripts": {
     "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json ./README.md && echo 'code{padding: 2px 4px;font-size: 90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;}' >> ./docs/styles/jsdoc-default.css",
