@@ -33,21 +33,26 @@ var File = require('./file'),
  */
 
 /**
+ * 将字符串或数组统一成数组
+ * @param {String|Array} arg
+ * @private
+ */
+function _toArray(arg) {
+  return arg ? [].concat(arg) : [];
+}
+
+
+/**
  * 用 glob 批量匹配
- * @param {Array} patterns
+ * @param {Array|String} patterns
  * @param {Object} opts
  * @returns {Array}
  * @private
  */
 function _batchGlob(patterns, opts) {
-  var result = [];
-  if (patterns) {
-    patterns = [].concat(patterns);
-    result = patterns.reduce(function(all, curr) {
-      return all.concat(glob(curr, opts));
-    }, []);
-  }
-  return result;
+  return _toArray(patterns).reduce(function(all, curr) {
+    return all.concat(glob(curr, opts));
+  }, []);
 }
 
 /**
@@ -60,7 +65,7 @@ function _batchGlob(patterns, opts) {
 function _getInspectFiles(globPatterns, opts) {
   // 通过 globPatterns 得到所有需要处理的文件
   var inspectFiles;
-  if (!globPatterns || globPatterns.length === 0) {
+  if (!globPatterns.length) {
     var ext = opts.htmlExts.length > 1 ? '{' + opts.htmlExts.join(',') + '}' : opts.htmlExts[0];
 
     if (_.isNumber(opts.deep) && opts.deep > 0) {
@@ -120,12 +125,13 @@ function _checkOpts(opts) {
     assert(opts.rename > 0, 'opts.rename should larger than 0 or should be a Function.');
   }
 
-  opts.excludes = opts.excludes ? [].concat(opts.excludes) : []; // 确保 opts.excludes 是个数组
+  opts.excludes = _toArray(opts.excludes);
   if (opts.outDir && opts.outDir.indexOf('..') !== 0) {
     opts.excludes.push(path.join(opts.outDir, '**')); // 输出文件夹应该排除在外
   }
 
   opts.unbrokenFiles = _batchGlob(opts.unbrokenFiles, opts.glob);
+  opts.useAbsoluteRefFiles = _batchGlob(opts.useAbsoluteRefFiles, opts.glob);
 }
 
 /**
@@ -182,7 +188,32 @@ function _autoRegisterUploader() {
  * @param {String|Array} [globPatterns = null]  - {@link https://github.com/isaacs/node-glob glob} 字符串，
  *                                                指定要分析的文件或文件夹，而不是分析整个 `dir` 目录
  *
- * @param {Object}    [opts = {}]             - 配置项
+ * @param {Object}    [opts = {}]       - 配置项
+ *
+ * @param {String}    [opts.uploader = 'qiniu']         - 指定上传组件，默认且只支持 `qiniu`，但你可以注册自己的上传组件
+ *                    {@link https://github.com/qiu8310/deploy-asset/blob/master/examples/custom-uploader.js 参考这里}
+ * @param {Object}    [opts.uploaderOptions]            - 上传模块需要的配置，透传给指定的 uploader，参考 {@link module:QiniuUploader}
+ * @param {Integer}   [opts.eachUploadLimit]            - 每次同步上传的个数限制，默认是 cpu 个数的两倍
+ *
+ * @param {Array}     [opts.includes = []]              - 这里指定的文件会合并到 `globPatterns` 中，
+ *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
+ * @param {Array}     [opts.excludes = []]              - 这里指定的文件会从 `globPatterns` 中排除
+ * @param {Array}     [opts.useAbsoluteRefFiles = []]   - 这里指定的文件中的内容所含资源会使用绝对路径，否则 HTML 和 CSS 中会优先使用相对路径，
+ *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
+ * @param {Array}     [opts.unbrokenFiles = []]         - 这里指定的文件的内容不会更新
+ *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
+ *
+ * @param {String|Boolean}  [opts.outDir = false]        - 输出分析后的文件到此文件夹，如果设置为 false 则不会输出生成的文件
+ * @param {String}          [opts.prefix = '']           - 输出的新的文件名的前缀
+ * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，可以为 silly, verbose, info, warn, error, silent
+ *
+ *
+ * @param {Integer|Boolean}         [opts.deep = false] - 指定要遍历文件夹的深度（ globPatterns 需要为 null ）
+ *                                                        true: 递归，false|0: 当前文件夹，其它数字表示指定的深度
+ * @param {Integer|RenameFunction}  [opts.rename = 8]   - 重命名文件的 basename
+ *
+ *  - 如果是 Integer，会加上 `rename` 个 hash 字符在 basename 后面，如 rename = 4, base.js => base-23ab.js
+ *  - 如果是 Function，则会调用此 function 来返回新的 basename
  *
  * @param {String}    [opts.htmlExts = 'html,htm']      - 指定 html 文件可能的后缀名
  * @param {String}    [opts.jsExts = 'js']              - 指定 js 文件可能的后缀名
@@ -190,24 +221,6 @@ function _autoRegisterUploader() {
  * @param {String}    [opts.jsonExts = 'json']          - 指定 json 文件可能的后缀名
  * @param {Boolean}   [opts.force = false]              - 如果静态资源没找到，是否强制继续执行
  * @param {Boolean}   [opts.dry = false]                - 只显示执行结果，不真实上传文件
- * @param {String}    [opts.uploader = 'qiniu']         - 只显示执行结果，不真实上传文件
- * @param {Integer}   [opts.eachUploadLimit]            - 每次同步上传的个数限制，默认是 cpu 个数的两倍
- * @param {Object}    [opts.uploaderOptions]            - 上传模块需要的配置，透传给指定的 uploader，参考 {@link module:QiniuUploader}
- * @param {Array}     [opts.excludes = []]              - 需要忽略的文件，支持使用 {@link https://github.com/isaacs/node-glob glob}
- * @param {Array}     [opts.unbrokenFiles = []]         - 文件如果包含在这数组中，则此文件的内容不会变动，只会直接上传到远程。
- *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
- *
- * @param {String|Boolean}  [opts.outDir = false]        - 输出分析后的文件到此文件夹，如果设置为 false 则不会输出生成的文件
- * @param {String}          [opts.prefix = '']           - 输出的新的文件名前缀
- * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，可以为 silly, verbose, info, warn, error, silent
- * @param {Integer|Boolean}         [opts.deep = false]  - 指定要遍历文件夹的深度（ globPatterns 需要为 null ）
- *                                                        true: 递归，false|0: 当前文件夹，其它数字表示指定的深度
- *
- * @param {Integer|RenameFunction}  [opts.rename = 8]   - 重命名文件的 basename
- *
- *  - 如果是 Integer，并且大于 0，则会在 basename 后面加上 `rename` 个 hash 的长度；如 rename = 4，则 base.js 可能会命名成 base-23ab.js
- *  - 如果是 Function，则会调用此 function 来返回新的 basename
- *  - 如果以上都不满足，则使用默认值 `8`
  *
  * @param {Function}  [callback = null]    - 文件上传完成后的回调函数，callback 的参数是一个所有文件组成的 Object
  *
@@ -238,8 +251,12 @@ function da(dir, globPatterns, opts, callback) {
   // 默认配置项
   opts = _.assign({
     deep: false,
+
+    includes: [],
     excludes: [],
+    useAbsoluteRefFiles: [],
     unbrokenFiles: [],
+
     force: false,
     dry: false,
     uploader: 'qiniu',
@@ -249,7 +266,7 @@ function da(dir, globPatterns, opts, callback) {
     jsExts: 'js',
     cssExts: 'css',
     jsonExts: 'json',
-    outDir: './public',
+    outDir: false,
     rename: 8,
     logLevel: 'warn',
     prefix: ''
@@ -272,9 +289,11 @@ function da(dir, globPatterns, opts, callback) {
   // 目录切换
   var back = function() { if (cwd !== dir) { process.chdir(cwd); } };
   if (cwd !== dir) {
-    log.warn('change current dir to', dir);
+    log.warn('Temporary change current dir to', dir);
     process.chdir(dir);
   }
+
+  globPatterns = _toArray(globPatterns).concat(_toArray(opts.includes));
 
   // 检查配置
   _checkOpts(opts);

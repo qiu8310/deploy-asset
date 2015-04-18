@@ -188,7 +188,7 @@ File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
         log[logType]('file not exists', '%s in %s at %d', src, file.path, start);
       }
       if (!OPTS.force) {
-        log.error('use force option to proceed');
+        log.error('Use force option to proceed');
         throw new Error('File ' + src + ' not exists');
       }
     }
@@ -198,6 +198,7 @@ File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
       log.silly('\t found asset', start + ' ' + filepath);
       var asset = {
         type: pattern.type !== 'unknown' && pattern.type || _detectFileType(filepath),
+        relative: pattern.relative,
         start: start,
         end: end,
         filepath: filepath
@@ -229,7 +230,7 @@ File.prototype.findAssets = function() {
     file.callers.forEach(function(f) { relativeDirs.unshift(f.dirname); });
   }
 
-  log.verbose('finding assets in ' + file.type + ' file', file.path);
+  log.verbose('Finding assets in ' + file.type + ' file', file.path + ' ...');
 
   var result = pts.reduce(function(all, pattern) {
 
@@ -257,6 +258,7 @@ File.prototype.addCaller = function(file) {
  * @param {Integer}   asset.start
  * @param {Integer}   asset.end
  * @param {String}    asset.filepath
+ * @param {Boolean}   asset.relative
  * @param {Function}  asset.outFilter - Come from {@link patterns} item's outFilter
  */
 File.prototype.addAsset = function(asset) {
@@ -272,19 +274,19 @@ File.prototype.addAsset = function(asset) {
  * @private
  */
 function _upload(uploader, opts, cb) {
-  var files = _.values(MAP);
-  log.info('you have ' + files.length + ' files need upload, the max concurrent number is ' + opts.eachUploadLimit);
+  var files = _.filter(_.values(MAP), function(file) { return !_.includes(OPTS.inspectOnly, file.path); });
+  log.info('You have ' + files.length + ' files need upload, the max concurrent number is ' + opts.eachUploadLimit);
 
   if (uploader.enableBatchUpload) {
     uploader.batchUploadFiles(files, cb);
   } else {
     async.eachLimit(files, opts.eachUploadLimit, function (file, next) {
-      log.info('start upload', file.path);
+      log.info('Start uploading ...', file.path);
       uploader.uploadFile(file, function(err) {
         if (err) {
           err.file = file.path;
         } else {
-          log.info('  end upload', file.path);
+          log.info('  end uploaded', file.path);
         }
         next(err);
       });
@@ -315,7 +317,7 @@ function _inspect (files, caller) {
 
       if (caller) { file.addCaller(caller); }
 
-      if (OPTS.unbrokenFiles.indexOf(file.path) < 0) {
+      if (!_.includes(OPTS.unbrokenFiles, file.path)) {
         var assets = file.findAssets();
 
         assets.forEach(file.addAsset.bind(file));
@@ -326,6 +328,27 @@ function _inspect (files, caller) {
   });
 }
 
+
+var _rHost = /^((?:\w+:)?\/\/[^\/]+)/;
+/**
+ * 得到相对 url 路径
+ * @param {String} ref
+ * @param {String} target
+ * @returns {String}
+ * @private
+ */
+function _getRelativePath(ref, target) {
+  // 首先两个地址的域名要相同
+  var host;
+  _rHost.test(ref);
+  host = RegExp.$1;
+  _rHost.test(target);
+  if (host && host === RegExp.$1) {
+    return path.relative(path.dirname(ref.substr(host.length)), target.substr(host.length));
+  }
+
+  return target;
+}
 
 /**
  * 更新文件的引用
@@ -341,19 +364,24 @@ function _update () {
 
   _.each(MAP, function(file) {
     if (file.assets.length) {
+      var useRelativeAssetPath = !_.includes(OPTS.useAbsoluteRefFiles, file.path);
       file.content = alter(file.content, file.assets.map(function(asset) {
         var str = MAP[asset.filepath].remote.path;
         if (asset.outFilter) { str = asset.outFilter(str); }
+
+        if (asset.relative && useRelativeAssetPath) {
+          str = _getRelativePath(file.remote.path, str);
+        }
 
         return {start: asset.start, end: asset.end, str: str};
       }));
     }
 
     if (OPTS.outDir) {
-      var dir = path.join(OPTS.outDir, path.dirname(file.path)),
+      var dir = path.join(OPTS.outDir, path.dirname(file.remote.path.replace(_rHost, '').substr(1))),
         filepath = path.join(dir, file.remote.basename);
       mkdirp(dir);
-      log.info('write to file', filepath);
+      log.info('Write to file', filepath);
       fs.writeFileSync(filepath, file.content);
     }
   });
@@ -375,7 +403,10 @@ File.inspect = function(files, daOpts, cb) {
 
     var uploader = Uploader.instance(daOpts.uploader, daOpts.uploaderOptions);
 
-    _.each(MAP, function(file) { uploader.setFileRemotePath(file); });
+    _.each(MAP, function(file) {
+      uploader.setFileRemotePath(file);
+      file.remote.basename = path.basename(file.remote.path);
+    });
     _update();
 
     if (!daOpts.dry) {

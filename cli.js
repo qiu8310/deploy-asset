@@ -8,45 +8,48 @@ var program = require('commander');
 
 program
   .version(require(require('path').join(__dirname, 'package.json')).version)
-  .usage('[options] <directory_or_globPatterns>')
-  .description('Deploy the directory\'s static files to supported server (Only support qiniu for now).')
+  .usage('[options] <directory> <globPatterns>')
+  .description('Deploy the directory\'s static files to supported server (Only support qiniu for now).' +
+    '\r\n  More detail about options on: https://qiu8310.github.io/deploy-asset/global.html#da')
 
-  .option('-i, --includes <globPatterns>', 'Include files, support glob pattern')
-  .option('--excludes <excludes>', 'Exclude files, support glob pattern')
-  .option('--unbroken <unbrokenFiles>', 'Unbroken files, support glob pattern')
-  .option('-u --uploader <uploader>', 'Specified the uploader')
-  .option('-d, --deep <deep>', 'Set opts.deep to a specific number', parseInt)
-  .option('--limit <eachUploadLimit>', 'The max concurrent upload files number', parseInt)
-  .option('--hash <rename>', 'Files basename postfix hash chars length', parseInt)
-  .option('-p, --prefix <prefix>', 'Files basename prefix string')
-  .option('-o, --out-dir <outDir>', 'Output all uploaded file in local')
+  .option('-i, --includes <globPatterns>', 'include files, support glob pattern')
+  .option('--excludes <excludes>', 'excludes files, support glob pattern')
+  .option('--absolute <useAbsoluteRefFiles>', 'use absolute asset path in these files, support glob pattern')
+  .option('--unbroken <unbrokenFiles>', 'upload these files but not inspect, support glob pattern')
 
-  .option('--force', 'Disable throws error when assets not exist while they should exist')
-  .option('--dry', 'Don\'t upload, just output the result')
+  .option('-u --uploader <uploader>', 'specified the uploader')
+  .option('-d, --deep <deep>', 'set directory\'s deep, default is 0', parseInt)
+  .option('--limit <eachUploadLimit>', 'the max concurrent upload files number', parseInt)
+  .option('--hash <rename>', 'how many hash chars append to file basename', parseInt)
+  .option('-p, --prefix <prefix>', 'append a string to file basename')
+  .option('-o, --out-dir <outDir>', 'output all uploaded file in local directory')
 
-  .option('--html-exts <htmlExts>', 'Set html file extensions for detect file\'s type')
-  .option('--json-exts <jsonExts>', 'Set json file extensions for detect file\'s type')
-  .option('--js-exts <jsExts>', 'Set js file extensions for detect file\'s type')
-  .option('--css-exts <cssExts>', 'Set css file extensions for detect file\'s type')
+  .option('--force', 'disable throws error when assets not exist while they should exist')
+  .option('--dry', 'don\'t upload, just output the result')
 
-  .option('-l, --log-level <logLevel>', 'Set log level, support: silly, verbose, info, warn, error, silent')
-  .option('--verbose', 'Set log level to verbose')
-  .option('--silent', 'Set log level to silent')
-  .option('--info', 'Set log level to info')
+  .option('--html-exts <htmlExts>', 'set html file extensions for detect file\'s type')
+  .option('--json-exts <jsonExts>', 'set json file extensions for detect file\'s type')
+  .option('--js-exts <jsExts>', 'set js file extensions for detect file\'s type')
+  .option('--css-exts <cssExts>', 'set css file extensions for detect file\'s type')
 
-  .option('-c, --config-file <configFile>', 'Use specified config file')
+  .option('-l, --log-level <logLevel>', 'set log level, support: silly, verbose, info, warn, error, silent')
+  .option('--verbose', 'set log level to verbose')
+  .option('--silent', 'set log level to silent')
+  .option('--info', 'set log level to info')
+
+  .option('-c, --config-file <configFile>', 'use specified config file')
   .parse(process.argv);
 
 
 var opts = {};
-var map = { unbroken: 'unbrokenFiles', limit: 'eachUploadLimit', hash: 'rename' };
+var map = { unbroken: 'unbrokenFiles', limit: 'eachUploadLimit', hash: 'rename', absolute: 'useAbsoluteRefFiles' };
 
 if (program.configFile) { _.assign(opts, require(program.configFile)); }
 
-if (/da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
+if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
-('deep,excludes,unbrokenFiles,force,dry,uploader,eachUploadLimit,htmlExts' +
-'jsExts,cssExts,jsonExts,rename,outDir,prefix').split(',').forEach(function(key) {
+('deep,includes,excludes,unbroken,absolute,force,dry,uploader,limit,htmlExts' +
+'jsExts,cssExts,jsonExts,hash,outDir,prefix').split(',').forEach(function(key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
     }
@@ -66,8 +69,6 @@ if (arg && path.isDirectorySync(arg)) {
   dir = '.';
   globPatterns = program.args.slice(0);
 }
-
-if (program.includes) { globPatterns.push(program.includes); }
 
 require('./')(dir, globPatterns, opts, function(err, all) {
   if (err) {

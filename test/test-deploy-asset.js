@@ -20,6 +20,7 @@ var assert = require('should'),
 describe('deployAsset', function () {
   var root = path.join(__dirname, 'fixtures'),
     basicRoot = path.join(root, 'basic'),
+    absRoot = path.join(root, 'abs'),
     errorRoot = path.join(root, 'error');
 
   context('arguments check', function() {
@@ -123,17 +124,9 @@ describe('deployAsset', function () {
 
   context('basic deploy - opts.outDir', function() {
 
-    it('should deploy to a default public dir', function(done) {
-      da(basicRoot, '*.html', {dry: true, logLevel: 'silent'}, function() {
-        glob('./public/{*.*,*/*.*}').should.have.length(4); // 生成 4 个文件
-        rm('./public');
-        done();
-      });
-    });
-    it('should not deploy to local if not outDir is false', function(done) {
+    it('should not deploy to local if outDir is false', function(done) {
       da(basicRoot, '*.html', {dry: true, outDir: false, logLevel: 'silent'}, function() {
         glob('./public/{*.*,*/*.*}').should.have.length(0);
-        rm('./public');
         done();
       });
     });
@@ -150,9 +143,9 @@ describe('deployAsset', function () {
   context('basic deploy - opts.rename', function() {
 
     it('should append specified number chars to file', function(done) {
-      da(basicRoot, '*/*.js', {dry: true, rename: 4, logLevel: 'silent'}, function() {
+      da(basicRoot, '*/*.js', {dry: true, rename: 4, outDir: 'public', logLevel: 'silent'}, function() {
         var rtn = glob('./public/{*.*,*/*.*}');
-        //rtn.should.have.length(1);
+        rtn.should.have.length(1);
         assert(/^\w\/\w-\w{4}\.js$/.test(rtn[0]));
         rm('./public');
         done();
@@ -166,7 +159,7 @@ describe('deployAsset', function () {
         content.should.eql(fs.readFileSync('scripts/main.js').toString());
         return 'a.js';
       };
-      da(basicRoot, '*/*.js', {dry: true, rename: rename, logLevel: 'silent'}, function() {
+      da(basicRoot, '*/*.js', {dry: true, rename: rename, outDir: 'public', logLevel: 'silent'}, function() {
         var rtn = glob('./public/{*.*,*/*.*}');
         rtn.should.have.length(1);
         assert(/^\w\/a.js$/.test(rtn[0]));
@@ -176,7 +169,7 @@ describe('deployAsset', function () {
     });
 
     it('should use default value 8 if function return null', function(done) {
-      da(basicRoot, '*/*.js', {dry: true, rename: function() {}, logLevel: 'silent'}, function() {
+      da(basicRoot, '*/*.js', {dry: true, rename: function() {}, outDir: 'public', logLevel: 'silent'}, function() {
         var rtn = glob('./public/{*.*,*/*.*}');
         rtn.should.have.length(1);
         assert(/^\w\/\w-\w{8}\.js$/.test(rtn[0]));
@@ -187,11 +180,38 @@ describe('deployAsset', function () {
 
   });
 
+  context('basic deploy - opts.useAbsoluteRefFiles', function() {
+    it('should use relative path default', function(done) {
+      da(absRoot, 'c.css', {logLevel: 'silent', outDir: 'public', rename: function(o) { return o; }}, function(err) {
+        var files = glob('public/*.*');
+        files.length.should.eql(2);
+        assert(/"t\.txt"/.test(fs.readFileSync('public/c.css')));
+        done(err);
+      });
+    });
+    it('should use absolute path when specified in useAbsoluteRefFiles', function(done) {
+      da(absRoot, 'c.css',
+        {
+          logLevel: 'silent', outDir: 'public',
+          useAbsoluteRefFiles: '*.css',
+          rename: function(o) { return o; }
+        },
+        function(err) {
+          var files = glob('public/*.*');
+          files.length.should.eql(2);
+          assert(!/"t\.txt"/.test(fs.readFileSync('public/c.css')));
+          rm('public')
+          done(err);
+      });
+    });
+  });
+
   context('basic deploy - opts.unbrokenFiles', function() {
-    it('should not upload assets in unbrokenFiles', function(done) {
-      da(basicRoot, '*.html', {dry: true, unbrokenFiles: '*.html', logLevel: 'silent'}, function() {
+    it('should not inspect assets in unbrokenFiles', function(done) {
+      da(basicRoot, '*.html', {dry: true, unbrokenFiles: '*.html', outDir: 'public', logLevel: 'silent'}, function() {
         var rtn = glob('./public/{*.*,*/*.*}');
         rtn.should.have.length(1);
+        fs.readFileSync(rtn[0]).toString().should.eql(fs.readFileSync('index.html').toString());
         rm('./public');
         done();
       });
@@ -215,7 +235,6 @@ describe('deployAsset', function () {
     it('should not throws when force it to proceed', function(done) {
       da(errorRoot, {force: true, dry: true, logLevel: 'silent'}, function(err, all) {
         assert.ok(all);
-        rm('./public');
         done();
       });
     });

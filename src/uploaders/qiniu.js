@@ -29,9 +29,9 @@ var Uploader = require('../uploader');
  */
 function QiniuUploader(opts) {
   if (!opts.ak && !opts.sk && !opts.bucket && !opts.domain) {
-    log.warn('qiniu setting', 'You are using a public qiniu setting, it may not work.');
-    log.warn('qiniu setting');
-    log.warn('qiniu setting', 'You can register an account yourself in http://www.qiniu.com/');
+    log.warn('Qiniu setting', 'You are using a public qiniu setting, it may not work.');
+    log.warn('Qiniu setting');
+    log.warn('Qiniu setting', 'You can register an account yourself in http://www.qiniu.com/');
 
     opts = _.assign({
       ak: '6mU6vJ3h3ffH4DrPaAyH1SDsDMktTjpBq0U6Zo8G',

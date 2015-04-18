@@ -23,6 +23,8 @@
  * 先确认它不是 remote 文件，再确认路径中没有动态参数像 {{}}、<%%> 等，
  * 确认无误就报错了（错误可以通过选项 force 屏蔽）。
  *
+ * relative 属性表示此规则是否允许文件使用相对路径来替换远程资源
+ *
  * @name patterns
  * @private
  * @type {Object}
@@ -31,42 +33,49 @@ module.exports = {
   html: [
     {
       type: 'js',
+      relative: true,
       re: /<script.+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的 JS 文件',
       exists: true
     },
     {
       type: 'css',
+      relative: true,
       re: /<link[^\>]+href=['"]([^"']+)["']/gm,
       msg: '查找文件中的 CSS 文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<img[^\>]*[^\>\S]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的 img 标签中的文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<video[^\>]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的 video 标签中的 src 文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<video[^\>]+poster=['"]([^"']+)["']/gm,
       msg: '查找文件中的 video 标签中的 poster 文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<source[^\>]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的 source 标签中的文件',
       exists: true
     },
     {
       type: 'js',
+      relative: true,
       re: /data-main=['"]([^"']+)['"]/gm,
       msg: '查找 require.js 指定的 data-main 属性中的 js 文件',
       inFilter: function(m) { return /\.js$/.test(m) ? m : m + '.js'; },
@@ -79,28 +88,33 @@ module.exports = {
     },
     {
       type: 'static',
+      relative: true,
       re: /url\(\s*['"]?([^"'\)]+)["']?\s*\)/gm,
       msg: '查找文件中内嵌的 style 中的资源文件'
     },
     {
       type: 'unknown',
+      relative: true,
       re: /<a[^\>]+href=['"]([^"']+)["']/gm,
       msg: '查找文件中 a 标签引用的文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<input[^\>]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中 input 标签中引用的文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<meta[^\>]+content=['"]([^"']+)["']/gm,
       msg: '查找文件中的 meta 标签中的图片文件'
     },
     {
       type: 'static',
+      relative: true,
       re: /<object[^\>]+data=['"]([^"']+)["']/gm,
       msg: '查找文件中的 object 标签中的文件',
       exists: true
@@ -113,12 +127,14 @@ module.exports = {
     },
     {
       type: 'static',
+      relative: true,
       re: /<image[^\>]*[^\>\S]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的新的 image 标签中的 src 所指定的文件',
       exists: true
     },
     {
       type: 'static',
+      relative: true,
       re: /<(?:img|source)[^\>]*[^\>\S]+srcset=['"]([^"'\s]+)\s*?(?:\s\d*?[w])?(?:\s\d*?[x])?\s*?["']/gm,
       msg: '查找文件中的 img 或 source 标签的 srcset 所指定的文件',
       exists: true
@@ -140,6 +156,7 @@ module.exports = {
   css: [
     {
       type: 'static',
+      relative: true,
       re: /(?:src=|url\(\s*)['"]?([^'"\)\(\?\|#)]+)['"]?\s*\)?/gm,
       msg: '查找 CSS 中引用的资源文件',
       exists: true

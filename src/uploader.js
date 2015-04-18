@@ -84,7 +84,7 @@ var cache = {};
  * @see QiniuUploader
  */
 Uploader.register = function(name, uploader) {
-  log.info('register uploader', name);
+  log.info('Register uploader', name);
   cache[name] = uploader;
 };
 

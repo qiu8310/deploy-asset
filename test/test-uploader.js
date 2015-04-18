@@ -10,6 +10,7 @@ var da = require('../');
 var assert = require('should');
 var path = require('path');
 var qiniu = require('qiniu');
+var glob = require('glob').sync;
 var sinon = require('sinon');
 
 require('npmlog').level = 'silent';
@@ -20,7 +21,7 @@ describe('uploader', function() {
   var rm = require('rimraf').sync;
 
   it('should throws when not found uploader', function(done) {
-    da(root, {uploader: 'custom'}, function(err) {
+    da(root, {uploader: 'custom', logLevel: 'silent'}, function(err) {
       assert.ok(err);
       done();
     })
@@ -39,10 +40,14 @@ describe('uploader', function() {
     });
   });
 
+
+  // TODO 检查输出文件在同一个文件夹内
+  // TODO 自定义的 uploader 也要添加检查
+
   context('qiniu uploader', function() {
     it('should throws when missing config', function() {
       assert.throws(function() {
-        da(root, {uploaderOptions: {ak: 'abc'}});
+        da(root, {uploaderOptions: {ak: 'abc'}, logLevel: 'silent'});
       });
     });
 
@@ -58,19 +63,36 @@ describe('uploader', function() {
         done();
       })
     });
+
+    it('should output all files in same directory, with no sub directory', function(done) {
+      da(root, '*.html', {logLevel: 'silent', dry: true, outDir: 'pub'}, function(err) {
+        glob('pub/*.*').length.should.eql(4);
+        rm('pub');
+        done(err);
+      });
+    });
   });
 
   context('custom uploader', function() {
     before(function() {
       da.Uploader.register('tu', da.Uploader.extend({
-        setFileRemotePath: function(file) { file.remote.path = 'http://test.com/x.js'; },
+        setFileRemotePath: function(file) {
+          var p;
+          switch (file.path) {
+            case 'scripts/main.js': p = 'http://test.com/x.js'; break;
+            case 'sub/sub.html': p = 'http://test.com/sub/x.html'; break;
+            case 'sub/subsub/subsub.html': p = 'http://a/x.html'; break;
+            default : throw new Error();
+          }
+          file.remote.path = p;
+        },
         uploadFile: function(file, cb) { cb(/css$/.test(file.path) ? new Error('test') : null); }
       }));
     });
 
     it('should upload error when file is css file', function(done) {
-      da(root, '*/*.css', {uploader: 'tu', dry: false}, function(err) {
-        err.message.should.eql('test');
+      da(root, '*/*.css', {uploader: 'tu', dry: false, logLevel: 'error'}, function(err) {
+        assert(err);
         done();
       });
     });
@@ -95,6 +117,17 @@ describe('uploader', function() {
         done();
       });
     });
+
+    it('should use remote path to decide local file\'s direcotry', function(done) {
+      da(root, ['*/*.js', '*/*.html', '*/*/*.html'],
+        {dry: true, uploader: 'tu', outDir: 'pub', logLevel: 'silent'},
+        function(err) {
+          glob('pub/*.*').length.should.eql(2);
+          glob('pub/sub/x.html').length.should.eql(1);
+          rm('pub');
+          done(err);
+        })
+    });
   });
 
   context('batch uploader', function() {
@@ -109,7 +142,7 @@ describe('uploader', function() {
 
     it('should call batchUploadFiles', function(done) {
       spy = sinon.spy();
-      da(root, {uploader: 'bu'}, function() {
+      da(root, {uploader: 'bu', logLevel: 'silent'}, function() {
         assert(spy.called);
         rm('./public');
         done();
