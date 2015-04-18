@@ -287,7 +287,6 @@ function da(dir, globPatterns, opts, callback) {
   log.level = opts.logLevel;
 
   log.profiler('da', 'all start');
-  
   log.info('Using config files: ', daRcOpts.configs);
 
   log.info('Argument dir', dir);
