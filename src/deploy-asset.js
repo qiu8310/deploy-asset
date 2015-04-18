@@ -17,11 +17,19 @@ var assert = require('assert'),
 var _ = require('lodash'),
   path = require('x-path'),
   log = require('npmlog'),
-  glob = require('glob').sync;
+  glob = require('glob').sync,
+  sprintf = require('sprintf-js').sprintf;
 
 var File = require('./file'),
   Uploader = require('./uploader');
 
+// Add profiler level
+log.addLevel('profiler', 3500, {fg: 'black', bg: 'cyan'}, 'TIME');
+var _spy = log.profiler, marks = {};
+log.profiler = function(mark, msg) {
+  if (!marks[mark]) { marks[mark] = Date.now(); }
+  _spy.call(log, sprintf('%s: %dms', mark, (Date.now() - marks[mark])), msg || '');
+};
 
 /*
  log.silly(prefix, message, ...)
@@ -139,11 +147,11 @@ function _checkOpts(opts) {
  * @private
  */
 function _autoRegisterUploader() {
-  glob(path.resolve(__dirname, 'uploaders') + '/*.js').forEach(function(f) {
-    var key = path.basename(f).replace(/\.\w+$/, '');
-    Uploader.register(key, require(f));
+  ['qiniu'].forEach(function(key) {
+    Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
   });
 }
+_autoRegisterUploader();
 
 /**
  *
@@ -205,7 +213,8 @@ function _autoRegisterUploader() {
  *
  * @param {String|Boolean}  [opts.outDir = false]        - 输出分析后的文件到此文件夹，如果设置为 false 则不会输出生成的文件
  * @param {String}          [opts.prefix = '']           - 输出的新的文件名的前缀
- * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，可以为 silly, verbose, info, warn, error, silent
+ * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，
+ *                                                         可以为 silly, verbose, profiler, info, warn, error, silent
  *
  *
  * @param {Integer|Boolean}         [opts.deep = false] - 指定要遍历文件夹的深度（ globPatterns 需要为 null ）
@@ -273,6 +282,8 @@ function da(dir, globPatterns, opts, callback) {
   }, opts);
 
   log.level = opts.logLevel;
+
+  log.profiler('da', 'all start');
   log.info('Argument dir', dir);
   log.info('Argument globPatterns', globPatterns);
   log.info('Resolved argument options', opts);
@@ -302,6 +313,7 @@ function da(dir, globPatterns, opts, callback) {
   var inspectFiles = _getInspectFiles(globPatterns, opts);
 
   var done = function(err, all) {
+    log.profiler('da', 'all ended');
     if (err) {
       back();
       if (callback) {
@@ -326,8 +338,6 @@ function da(dir, globPatterns, opts, callback) {
     done();
   } else {
     log.info('Inspect files', inspectFiles);
-
-    _autoRegisterUploader();
     File.inspect(inspectFiles, opts, done);
   }
 }

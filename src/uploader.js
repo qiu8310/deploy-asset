@@ -7,7 +7,6 @@
  */
 
 /* jshint unused: vars */
-var log = require('npmlog');
 var Base = require('class-extend');
 
 /**
@@ -84,7 +83,6 @@ var cache = {};
  * @see QiniuUploader
  */
 Uploader.register = function(name, uploader) {
-  log.info('Register uploader', name);
   cache[name] = uploader;
 };
 

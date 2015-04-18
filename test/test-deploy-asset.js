@@ -182,17 +182,18 @@ describe('deployAsset', function () {
 
   context('basic deploy - opts.useAbsoluteRefFiles', function() {
     it('should use relative path default', function(done) {
-      da(absRoot, 'c.css', {logLevel: 'silent', outDir: 'public', rename: function(o) { return o; }}, function(err) {
+      da(absRoot, '*.css', {logLevel: 'silent', dry: true, outDir: 'public', rename: function(o) { return o; }}, function(err) {
         var files = glob('public/*.*');
         files.length.should.eql(2);
         assert(/"t\.txt"/.test(fs.readFileSync('public/c.css')));
+        rm('public');
         done(err);
       });
     });
     it('should use absolute path when specified in useAbsoluteRefFiles', function(done) {
       da(absRoot, 'c.css',
         {
-          logLevel: 'silent', outDir: 'public',
+          logLevel: 'silent', dry: true, outDir: 'public',
           useAbsoluteRefFiles: '*.css',
           rename: function(o) { return o; }
         },
@@ -200,7 +201,7 @@ describe('deployAsset', function () {
           var files = glob('public/*.*');
           files.length.should.eql(2);
           assert(!/"t\.txt"/.test(fs.readFileSync('public/c.css')));
-          rm('public')
+          rm('public');
           done(err);
       });
     });

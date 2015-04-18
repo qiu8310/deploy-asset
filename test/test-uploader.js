@@ -40,10 +40,6 @@ describe('uploader', function() {
     });
   });
 
-
-  // TODO 检查输出文件在同一个文件夹内
-  // TODO 自定义的 uploader 也要添加检查
-
   context('qiniu uploader', function() {
     it('should throws when missing config', function() {
       assert.throws(function() {

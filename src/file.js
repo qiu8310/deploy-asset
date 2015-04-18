@@ -399,18 +399,24 @@ File.inspect = function(files, daOpts, cb) {
   MAP = {};
 
   try {
+    log.profiler('da', 'inspect start');
     _inspect(files);
+    log.profiler('da', 'inspect end');
 
     var uploader = Uploader.instance(daOpts.uploader, daOpts.uploaderOptions);
 
+    log.profiler('da', 'update local files start');
     _.each(MAP, function(file) {
       uploader.setFileRemotePath(file);
       file.remote.basename = path.basename(file.remote.path);
     });
     _update();
+    log.profiler('da', 'update local files end');
 
     if (!daOpts.dry) {
+      log.profiler('da', 'upload to remote start');
       _upload(uploader, daOpts, function(err) {
+        log.profiler('da', 'upload to remote end');
         cb(err, MAP);
       });
     } else {

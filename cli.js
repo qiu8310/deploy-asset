@@ -32,7 +32,7 @@ program
   .option('--js-exts <jsExts>', 'set js file extensions for detect file\'s type')
   .option('--css-exts <cssExts>', 'set css file extensions for detect file\'s type')
 
-  .option('-l, --log-level <logLevel>', 'set log level, support: silly, verbose, info, warn, error, silent')
+  .option('-l, --log-level <logLevel>', 'set log level, support: silly, verbose, profiler, info, warn, error, silent')
   .option('--verbose', 'set log level to verbose')
   .option('--silent', 'set log level to silent')
   .option('--info', 'set log level to info')
