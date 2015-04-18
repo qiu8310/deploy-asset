@@ -23,6 +23,8 @@ var _ = require('lodash'),
 var File = require('./file'),
   Uploader = require('./uploader');
 
+var daRcOpts = require('rc')('da');
+
 // Add profiler level
 log.addLevel('profiler', 3500, {fg: 'black', bg: 'cyan'}, 'TIME');
 var _spy = log.profiler, marks = {};
@@ -196,7 +198,8 @@ _autoRegisterUploader();
  * @param {String|Array} [globPatterns = null]  - {@link https://github.com/isaacs/node-glob glob} 字符串，
  *                                                指定要分析的文件或文件夹，而不是分析整个 `dir` 目录
  *
- * @param {Object}    [opts = {}]       - 配置项
+ * @param {Object}    [opts = {}]       - 配置项，支持在项目目录或个人目录下使用 `.darc` 的 json 文件
+ *                                        保存配置，使用了 {@link https://github.com/dominictarr/rc rc} 来解析
  *
  * @param {String}    [opts.uploader = 'qiniu']         - 指定上传组件，默认且只支持 `qiniu`，但你可以注册自己的上传组件
  *                    {@link https://github.com/qiu8310/deploy-asset/blob/master/examples/custom-uploader.js 参考这里}
@@ -279,11 +282,14 @@ function da(dir, globPatterns, opts, callback) {
     rename: 8,
     logLevel: 'warn',
     prefix: ''
-  }, opts);
+  }, daRcOpts, opts);
 
   log.level = opts.logLevel;
 
   log.profiler('da', 'all start');
+  
+  log.info('Using config files: ', daRcOpts.configs);
+
   log.info('Argument dir', dir);
   log.info('Argument globPatterns', globPatterns);
   log.info('Resolved argument options', opts);

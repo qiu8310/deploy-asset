@@ -37,7 +37,7 @@ program
   .option('--silent', 'set log level to silent')
   .option('--info', 'set log level to info')
 
-  .option('-c, --config-file <configFile>', 'use specified config file')
+  .option('-c, --config-file <configFile>', 'use specified config file, default config file is `.darc`')
   .parse(process.argv);
 
 

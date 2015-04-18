@@ -36,6 +36,7 @@
     "mkdirp": "^0.5.0",
     "npmlog": "^1.2.0",
     "qiniu": "^6.1.6",
+    "rc": "^1.0.1",
     "rimraf": "^2.3.2",
     "sprintf-js": "^1.0.2",
     "x-path": "0.0.2"
@@ -61,7 +62,7 @@
     "da": "cli.js"
   },
   "scripts": {
-    "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json ./README.md && echo 'code{padding: 2px 4px;font-size: 90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;}' >> ./docs/styles/jsdoc-default.css",
+    "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json && echo 'code{padding: 2px 4px;font-size: 90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;}' >> ./docs/styles/jsdoc-default.css",
     "coveralls": "gulp test && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test": "gulp test"
   }
