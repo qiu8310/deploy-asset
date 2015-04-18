@@ -200,7 +200,7 @@ _autoRegisterUploader();
  *
  * @param {String}    [opts.uploader = 'qiniu']         - 指定上传组件，默认且只支持 `qiniu`，但你可以注册自己的上传组件
  *                    {@link https://github.com/qiu8310/deploy-asset/blob/master/examples/custom-uploader.js 参考这里}
- * @param {Object}    [opts.uploaderOptions]            - 上传模块需要的配置，透传给指定的 uploader，参考 {@link module:QiniuUploader}
+ * @param {Object}    [opts.uploaderOptions]            - 上传模块需要的配置，透传给指定的 uploader，参考 {@link QiniuUploader}
  * @param {Integer}   [opts.eachUploadLimit]            - 每次同步上传的个数限制，默认是 cpu 个数的两倍
  *
  * @param {Array}     [opts.includes = []]              - 这里指定的文件会合并到 `globPatterns` 中，
