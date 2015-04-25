@@ -149,7 +149,7 @@ function _checkOpts(opts) {
  * @private
  */
 function _autoRegisterUploader() {
-  ['qiniu'].forEach(function(key) {
+  ['qiniu', 'sqiniu'].forEach(function(key) {
     Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
   });
 }

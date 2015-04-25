@@ -3,9 +3,9 @@ env: CI=true
 sudo: false
 
 
-#branches:
-#  only:
-#    - master
+branches:
+  only:
+    - master
 
 node_js:
   - "iojs"
