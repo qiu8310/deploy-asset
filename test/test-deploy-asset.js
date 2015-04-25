@@ -67,9 +67,9 @@ describe('deployAsset', function () {
       da(basicRoot, {deep: 1});
     });
 
-    it('should throws if opts.rename less or equal 0', function() {
+    it('should throws if opts.rename less then 0', function() {
       assert.throws(function() { da(basicRoot, {rename: -1}); });
-      assert.throws(function() { da(basicRoot, {rename: 0}); });
+      assert.throws(function() { da(basicRoot, {rename: -2}); });
 
       ept.once();
       da(basicRoot, {rename: 1});
@@ -141,6 +141,16 @@ describe('deployAsset', function () {
   });
 
   context('basic deploy - opts.rename', function() {
+
+    it('should totally use hash chars to rename file name', function(done) {
+      da(basicRoot, '*/*.js', {dry: true, rename: 0, outDir: 'public', logLevel: 'silent'}, function() {
+        var rtn = glob('./public/{*.*,*/*.*}');
+        rtn.should.have.length(1);
+        assert(/^\w{32}\.js$/.test(rtn[0]));
+        rm('./public');
+        done();
+      });
+    });
 
     it('should append specified number chars to file', function(done) {
       da(basicRoot, '*/*.js', {dry: true, rename: 4, outDir: 'public', logLevel: 'silent'}, function() {

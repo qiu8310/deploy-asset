@@ -37,7 +37,7 @@ function Uploader(opts) {
  * 在此函数中，你要做的事就是更新 `file.remote.path` 的值，将其改为 `此文件上传后的远程路径`，它默认值是 `null`
  *
  * @abstract
- * @param {String} file - 当前文件的 {@link File} 对象
+ * @param {File} file - 当前文件的 {@link File} 对象
  * @see QiniuUploader.setFileRemotePath
  */
 Uploader.prototype.setFileRemotePath = function(file) {

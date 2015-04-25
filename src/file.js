@@ -66,7 +66,15 @@ function _reBasename(oldBasename, path, content) {
   var len = _.isNumber(OPTS.rename) ? OPTS.rename : 8;
   var md5 = crypto.createHash('md5');
   md5.update(content);
-  return oldBasename.replace(/(\.\w*)$/, '-' + md5.digest('hex').substr(0, len) + '$1');
+
+  var ext, hash = md5.digest('hex');
+
+  if (len === 0) {
+    ext = oldBasename.split('.').pop().slice(-10); // 最长 10 位
+    return hash + '.' + ext;
+  }
+
+  return oldBasename.replace(/(\.\w*)$/, '-' + hash.substr(0, len) + '$1');
 }
 
 /**

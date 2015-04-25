@@ -132,7 +132,7 @@ function _checkOpts(opts) {
   }
   if (_.isNumber(opts.rename)) {
     opts.rename = parseInt(opts.rename, 10);
-    assert(opts.rename > 0, 'opts.rename should larger than 0 or should be a Function.');
+    assert(opts.rename >= 0, 'opts.rename should larger or equal than 0 or should be a Function.');
   }
 
   opts.excludes = _toArray(opts.excludes);
@@ -153,7 +153,7 @@ function _autoRegisterUploader() {
     Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
   });
 }
-_autoRegisterUploader();
+
 
 /**
  *
@@ -224,6 +224,7 @@ _autoRegisterUploader();
  *                                                        true: 递归，false|0: 当前文件夹，其它数字表示指定的深度
  * @param {Integer|RenameFunction}  [opts.rename = 8]   - 重命名文件的 basename
  *
+ *  - 如果是 0 ，会忽略文件的名称，完全使用 hash 字符串，如 770b95bb61d5b0406c135b6e42260580.js
  *  - 如果是 Integer，会加上 `rename` 个 hash 字符在 basename 后面，如 rename = 4, base.js => base-23ab.js
  *  - 如果是 Function，则会调用此 function 来返回新的 basename
  *
@@ -246,7 +247,6 @@ _autoRegisterUploader();
  * da('./image', '*.png');
  */
 function da(dir, globPatterns, opts, callback) {
-
   globPatterns = opts = callback = null;
   [].slice.call(arguments, 1).forEach(function(arg) {
     if (_.isString(arg) || _.isArray(arg)) {
@@ -342,6 +342,10 @@ function da(dir, globPatterns, opts, callback) {
     log.warn('No files to inspect');
     done();
   } else {
+
+    log.info('Register uploader', inspectFiles);
+    _autoRegisterUploader();
+
     log.info('Inspect files', inspectFiles);
     File.inspect(inspectFiles, opts, done);
   }
