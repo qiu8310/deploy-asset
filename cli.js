@@ -4,6 +4,8 @@
 var _ = require('lodash');
 var os = require('os');
 var path = require('x-path');
+var fs = require('fs-extra');
+var mkdirp = require('mkdirp').sync;
 var program = require('commander');
 
 program
@@ -23,6 +25,10 @@ program
   .option('--hash <rename>', 'how many hash chars append to file basename', parseInt)
   .option('-p, --prefix <prefix>', 'append a string to file basename')
   .option('-o, --out-dir <outDir>', 'output all uploaded file in local directory')
+
+  .option('--map-path <newFilePath>', 'output local file and remote file\'s relation to a json file')
+  .option('--map-local-path <newFilePath>', 'output local file paths to a json file')
+  .option('--map-remote-path <newFilePath>', 'output remote file paths to a json file')
 
   .option('--force', 'disable throws error when assets not exist while they should exist')
   .option('--dry', 'don\'t upload, just output the result')
@@ -70,6 +76,12 @@ if (arg && path.isDirectorySync(arg)) {
   globPatterns = program.args.slice(0);
 }
 
+function write(filePath, data) {
+  mkdirp(path.dirname(filePath));
+  fs.writeJsonFileSync(filePath, data);
+  console.log('Write to ' + path.resolve(filePath) + ' ok!\r\n');
+}
+
 require('./')(dir, globPatterns, opts, function(err, all) {
   if (err) {
     console.error(err);
@@ -77,13 +89,23 @@ require('./')(dir, globPatterns, opts, function(err, all) {
     if (_.size(all)) {
       var max  = _.max(all, function(f) { return f.path.length; }).path.length;
       var fill = function (str) {
-        return str + (new Array(max - str.length + 3)).join(' ');
+        return (new Array(max - str.length + 2)).join(' ') + str;
       };
       console.log(os.EOL);
+      var outMap = {};
       _.each(all, function(f) {
-        console.log(fill(f.path) + '=>  ' + f.remote.path);
+        outMap[f.path] = f.remote.path;
+        console.log(fill(f.path) + ' => ' + f.remote.path);
       });
       console.log(os.EOL);
+
+      if (program.mapLocalPath) {
+        write(program.mapLocalPath, _.keys(outMap));
+      } else if (program.mapRemotePath) {
+        write(program.mapRemotePath, _.values(outMap));
+      } else if (program.mapPath) {
+        write(program.mapPath, outMap);
+      }
     }
   }
 });
