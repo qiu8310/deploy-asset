@@ -1,3 +1,6 @@
 {
-  "rename": 6
+  "rename": 6,
+  "prefix": "",
+  "uploader": "qiniu",
+  "uploaderOptions": {}
 }
