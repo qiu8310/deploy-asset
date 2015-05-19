@@ -8,6 +8,7 @@
 
 var log = require('npmlog'),
   mime = require('mime'),
+  fs = require('fs'),
   request = require('request');
 
 var Uploader = require('../uploader');
@@ -80,7 +81,7 @@ module.exports = Uploader.extend({
     var formData = {
       token: '',
       file: {
-        value:  file.content,
+        value:  fs.createReadStream(file.path),
         options: {
           filename: file.basename,
           contentType: mime.lookup(file.path)
