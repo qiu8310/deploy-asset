@@ -8,7 +8,7 @@
 
 var _ = require('lodash'),
   log = require('npmlog'),
-  mime = require('mime'),
+  //mime = require('mime'),
   qiniu = require('qiniu');
 
 var Uploader = require('../uploader');
@@ -78,9 +78,10 @@ QiniuUploader.prototype.uploadFile = function(file, cb) {
   var self = this;
   var token = new qiniu.rs.PutPolicy(self.bucket + ':' + file.remote.basename).token();
 
-  var extra = new qiniu.io.PutExtra({}, mime.lookup(file.path));
+  //var extra = new qiniu.io.PutExtra({}, mime.lookup(file.path));
+  var extra = new qiniu.io.PutExtra();
 
-  qiniu.io.put(token, file.remote.basename, file.content, extra, function(err, ret) {
+  qiniu.io.putFile(token, file.remote.basename, file.path, extra, function(err, ret) {
     cb( err, ret );
   });
 };
