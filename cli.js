@@ -55,12 +55,13 @@ if (program.configFile) { _.assign(opts, require(program.configFile)); }
 if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
 ('deep,includes,excludes,unbroken,absolute,force,dry,uploader,limit,htmlExts' +
-'jsExts,cssExts,jsonExts,hash,outDir,prefix').split(',').forEach(function(key) {
+'jsExts,cssExts,jsonExts,hash,outDir,prefix,logLevel').split(',').forEach(function(key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
     }
   }
 );
+
 
 ['verbose', 'silent', 'info'].forEach(function(key) { if (key in program) { opts.logLevel = key; } });
 if (!_.isString(opts.outDir)) { opts.outDir = false; }

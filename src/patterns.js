@@ -34,7 +34,7 @@ module.exports = {
     {
       type: 'js',
       relative: true,
-      re: /<script.+src=['"]([^"']+)["']/gm,
+      re: /<script[^\>]+src=['"]([^"']+)["']/gm,
       msg: '查找文件中的 JS 文件',
       exists: true
     },
