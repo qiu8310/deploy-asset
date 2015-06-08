@@ -51,7 +51,7 @@ var OPTS = null;
  *
  * @param {String} oldBasename
  * @param {String} path
- * @param {String} content
+ * @param {Buffer} content
  * @returns {String}
  * @private
  */
@@ -65,7 +65,7 @@ function _reBasename(oldBasename, path, content) {
 
   var len = _.isNumber(OPTS.rename) ? OPTS.rename : 8;
   var md5 = crypto.createHash('md5');
-  md5.update(content);
+  md5.update(content.toString());
 
   var ext, hash = md5.digest('hex');
 
@@ -128,9 +128,9 @@ function File(file, opts) {
 
   /**
    * 当前文件的内容
-   * @type {String}
+   * @type {Buffer}
    */
-  this.content = fs.readFileSync(file).toString();
+  this.content = fs.readFileSync(file);
 
   /**
    * 当前文件的 basename
@@ -173,13 +173,12 @@ File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
   log.silly('\tpattern desc', pattern.msg);
 
   var all = [];
-  file.content.replace(pattern.re, function(raw, src, index) {
+  file.content.toString().replace(pattern.re, function(raw, src, index) {
     // 如果是以 \w+:// 或 // 开头的文件 ，则忽略
     if (/^(\w+:)?\/\//.test(src)) { return raw; }
 
     // 去掉 src 中的 ? 及 # 之后的字符串
     src = src.replace(/[\?|#].*$/, '');
-
     // 用指定的函数过滤下
     var start = index + raw.indexOf(src);
     var end = start + src.length;
@@ -373,7 +372,7 @@ function _update () {
   _.each(MAP, function(file) {
     if (file.assets.length) {
       var useRelativeAssetPath = !_.includes(OPTS.useAbsoluteRefFiles, file.path);
-      file.content = alter(file.content, file.assets.map(function(asset) {
+      file.content = new Buffer(alter(file.content.toString(), file.assets.map(function(asset) {
         var str = MAP[asset.filepath].remote.path;
         if (asset.outFilter) { str = asset.outFilter(str); }
 
@@ -382,7 +381,7 @@ function _update () {
         }
 
         return {start: asset.start, end: asset.end, str: str};
-      }));
+      })));
     }
 
     if (OPTS.outDir) {
@@ -390,7 +389,7 @@ function _update () {
         filepath = path.join(dir, file.remote.basename);
       mkdirp(dir);
       log.info('Write to file', filepath);
-      fs.writeFileSync(filepath, file.content);
+      fs.writeFileSync(filepath, file.content, {encoding: null});
     }
   });
 }
