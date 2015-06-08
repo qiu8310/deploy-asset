@@ -81,7 +81,7 @@ module.exports = Uploader.extend({
     var formData = {
       token: '',
       file: {
-        value:  fs.createReadStream(file.path),
+        value:  file.content,
         options: {
           filename: file.basename,
           contentType: mime.lookup(file.path)
