@@ -166,7 +166,7 @@ describe('deployAsset', function () {
       var rename = function(oldBasename, path, content) {
         oldBasename.should.eql('main.js');
         path.should.eql('scripts/main.js');
-        content.should.eql(fs.readFileSync('scripts/main.js').toString());
+        content.toString().should.eql(fs.readFileSync('scripts/main.js').toString());
         return 'a.js';
       };
       da(basicRoot, '*/*.js', {dry: true, rename: rename, outDir: 'public', logLevel: 'silent'}, function() {

@@ -49,7 +49,7 @@ describe('uploader', function() {
 
     it('should call upload', function(done) {
       var count = 0;
-      var stub = sinon.stub(qiniu.io, 'putFile', function(token, basename, content, extra, cb) {
+      var stub = sinon.stub(qiniu.io, 'put', function(token, basename, content, extra, cb) {
         count++;
         cb();
       });

@@ -80,8 +80,9 @@ QiniuUploader.prototype.uploadFile = function(file, cb) {
 
   var extra = new qiniu.io.PutExtra({}, mime.lookup(file.path));
   //var extra = new qiniu.io.PutExtra();
-  qiniu.io.put(token, file.remote.basename, file.content, extra, function(err, ret) {
+
   //qiniu.io.putFile(token, file.remote.basename, file.path, extra, function(err, ret) {
+  qiniu.io.put(token, file.remote.basename, file.content, extra, function(err, ret) {
     cb( err, ret );
   });
 };
