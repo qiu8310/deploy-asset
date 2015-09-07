@@ -6,7 +6,6 @@ dir=`dirname $0`
 cd $dir
 npm run docs
 
-cd docs
 
 echo "Document direcotry: `pwd`"
 
@@ -17,6 +16,8 @@ if [[ ! -d ./.git ]]; then
 else
   git co gh-pages -q
 fi
+
+cp -r docs/* .
 
 git add . -A
 git commit -m "publish docs"
