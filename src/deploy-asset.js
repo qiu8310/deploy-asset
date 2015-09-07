@@ -9,7 +9,6 @@
 /* jshint -W100 */
 
 'use strict';
-
 var assert = require('assert'),
   util = require('util'),
   os = require('os');

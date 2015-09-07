@@ -60,6 +60,8 @@ function _reBasename(oldBasename, path, content) {
     var rtn = OPTS.rename(oldBasename, path, content);
     if (_.isString(rtn)) {
       return rtn;
+    } else {
+      log.warn('Specified rename function did not return string, ignore it.');
     }
   }
 
@@ -174,11 +176,17 @@ File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
 
   var all = [];
   file.content.toString().replace(pattern.re, function(raw, src, index) {
-    // 如果是以 \w+:// 或 // 开头的文件 ，则忽略
-    if (/^(\w+:)?\/\//.test(src)) { return raw; }
+    // 如果是以 \w+: 或 // 开头的文件 ，则忽略，如 http://xxx.com/jq.js, //xxx.com/jq.js, javascript:;
+    if (/^(?:\w+:|\/\/)/.test(src)) { return raw; }
 
     // 去掉 src 中的 ? 及 # 之后的字符串
-    src = src.replace(/[\?|#].*$/, '');
+    src = src.replace(/[\?|#].*$/, '').trim();
+
+    if (!src) return raw;
+
+    // 如果是绝对路径，需要把当前路径放到相对路径中去
+    if (src[0] === '/' && relativeDirs.indexOf('.') < 0) relativeDirs.unshift('.');
+
     // 用指定的函数过滤下
     var start = index + raw.indexOf(src);
     var end = start + src.length;
