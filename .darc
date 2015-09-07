@@ -1,20 +1,6 @@
 {
   "rename": 6,
   "prefix": "",
-  "qiniu": {
-      "ak": "you_can_find_this_in_qiniu.com",
-      "sk": "you_can_find_this_in_qiniu.com",
-      "domain": "you_can_find_this_in_qiniu.com",
-      "bucket": "you_qiniu_bucket"
-    },
-
-    "ftp": {
-      "host": "192.168.22.22",
-      "port": 21,
-      "user": "someone",
-      "pass": "*******",
-      "baseUrl": "http://www.xxx.com",
-      "destDir": "path/to/where/you/want/to/upload"
-    }
-  }
+  "uploader": "qiniu",
+  "uploaderOptions": {}
 }

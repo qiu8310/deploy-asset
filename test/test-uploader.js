@@ -43,7 +43,7 @@ describe('uploader', function() {
   context('qiniu uploader', function() {
     it('should throws when missing config', function() {
       assert.throws(function() {
-        da(root, {uploaderOptions: {ak: 'abc'}, logLevel: 'silent'});
+        da(root, {uploaderOptions: {ak: 'abc'}, uploaders: null, logLevel: 'silent'});
       });
     });
 

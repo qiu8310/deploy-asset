@@ -21,3 +21,4 @@ fi
 git add . -A
 git commit -m "publish docs"
 git push origin gh-pages 
+git co master
