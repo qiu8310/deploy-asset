@@ -182,10 +182,10 @@ File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
     // 去掉 src 中的 ? 及 # 之后的字符串
     src = src.replace(/[\?|#].*$/, '').trim();
 
-    if (!src) return raw;
+    if (!src) { return raw; }
 
     // 如果是绝对路径，需要把当前路径放到相对路径中去
-    if (src[0] === '/' && relativeDirs.indexOf('.') < 0) relativeDirs.unshift('.');
+    if (src[0] === '/' && relativeDirs.indexOf('.') < 0) { relativeDirs.unshift('.'); }
 
     // 用指定的函数过滤下
     var start = index + raw.indexOf(src);
