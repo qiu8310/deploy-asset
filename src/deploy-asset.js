@@ -280,6 +280,7 @@ function da(dir, globPatterns, opts, callback) {
     uploader: 'qiniu',
     eachUploadLimit: (os.cpus().length || 1) * 2,
     uploaderOptions: {},
+    uploaders: {},
     htmlExts: 'html,htm',
     jsExts: 'js',
     cssExts: 'css',

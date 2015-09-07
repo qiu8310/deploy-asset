@@ -86,7 +86,7 @@ function write(filePath, data) {
 
 require('./')(dir, globPatterns, opts, function(err, all) {
   if (err) {
-    console.error(err);
+    console.error(err.stack);
   } else {
     if (_.size(all)) {
       var max  = _.max(all, function(f) { return f.path.length; }).path.length;

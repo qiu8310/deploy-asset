@@ -1,7 +1,7 @@
 {
   "name": "deploy-asset",
   "description": "Analyze web files and deploy them to CDN making them accessible.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/qiu8310/deploy-asset",
   "bugs": "https://github.com/qiu8310/deploy-asset/issues",
   "license": "MIT",
