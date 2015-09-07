@@ -140,6 +140,7 @@ function _checkOpts(opts) {
   }
 
   opts.unbrokenFiles = _batchGlob(opts.unbrokenFiles, opts.glob);
+  opts.unuploadFiles = _batchGlob(opts.unuploadFiles, opts.glob);
   opts.useAbsoluteRefFiles = _batchGlob(opts.useAbsoluteRefFiles, opts.glob);
 }
 
@@ -147,9 +148,12 @@ function _checkOpts(opts) {
  * 自动注册 Uploader
  * @private
  */
-function _autoRegisterUploader() {
-  ['qiniu'].forEach(function(key) {
-    Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
+function _autoRegisterUploader(uploaders) {
+  if (uploaders && !Array.isArray(uploaders)) { uploaders = [uploaders]; }
+  ['qiniu', 'ftp'].forEach(function(key) {
+    if (!uploaders || uploaders.indexOf(key) >= 0) {
+      Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
+    }
   });
 }
 
@@ -212,7 +216,9 @@ function _autoRegisterUploader() {
  *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
  * @param {Array}     [opts.unbrokenFiles = []]         - 这里指定的文件的内容不会更新
  *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
- *
+ * @param {Array}     [opts.unuploadFiles = []]         - 这里指定的文件会被计算到，但不会上传到远程，注意，源文件是永远不会被更新的，
+ *                                                        所以如果你想看此配置中的结果，通过指定 outDir 来查看。
+ *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
  * @param {String|Boolean}  [opts.outDir = false]        - 输出分析后的文件到此文件夹，如果设置为 false 则不会输出生成的文件
  * @param {String}          [opts.prefix = '']           - 输出的新的文件名的前缀
  * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，
@@ -267,6 +273,7 @@ function da(dir, globPatterns, opts, callback) {
     excludes: [],
     useAbsoluteRefFiles: [],
     unbrokenFiles: [],
+    unuploadFiles: [],
 
     force: false,
     dry: false,
@@ -282,6 +289,7 @@ function da(dir, globPatterns, opts, callback) {
     logLevel: 'warn',
     prefix: ''
   }, daRcOpts, opts);
+
 
   log.level = opts.logLevel;
 
@@ -343,7 +351,7 @@ function da(dir, globPatterns, opts, callback) {
   } else {
 
     log.info('Register uploader', inspectFiles);
-    _autoRegisterUploader();
+    _autoRegisterUploader(opts.uploader);
 
     log.info('Inspect files', inspectFiles);
     File.inspect(inspectFiles, opts, done);

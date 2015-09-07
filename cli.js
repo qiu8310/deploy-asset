@@ -18,6 +18,7 @@ program
   .option('--excludes <excludes>', 'excludes files, support glob pattern')
   .option('--absolute <useAbsoluteRefFiles>', 'use absolute asset path in these files, support glob pattern')
   .option('--unbroken <unbrokenFiles>', 'upload these files but not inspect, support glob pattern')
+  .option('--unupload <unuploadFiles>', 'these files will be inspected but not uploaded, support glob pattern')
 
   .option('-u --uploader <uploader>', 'specified the uploader')
   .option('-d, --deep <deep>', 'set directory\'s deep, default is 0', parseInt)
@@ -48,13 +49,13 @@ program
 
 
 var opts = {};
-var map = { unbroken: 'unbrokenFiles', limit: 'eachUploadLimit', hash: 'rename', absolute: 'useAbsoluteRefFiles' };
+var map = { unbroken: 'unbrokenFiles', unupload: 'unuploadFiles', limit: 'eachUploadLimit', hash: 'rename', absolute: 'useAbsoluteRefFiles' };
 
 if (program.configFile) { _.assign(opts, require(program.configFile)); }
 
 if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
-('deep,includes,excludes,unbroken,absolute,force,dry,uploader,limit,htmlExts' +
+('deep,includes,excludes,unbroken,unupload,absolute,force,dry,uploader,limit,htmlExts' +
 'jsExts,cssExts,jsonExts,hash,outDir,prefix,logLevel').split(',').forEach(function(key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
@@ -96,7 +97,7 @@ require('./')(dir, globPatterns, opts, function(err, all) {
       var outMap = {};
       _.each(all, function(f) {
         outMap[f.path] = f.remote.path;
-        console.log(fill(f.path) + ' => ' + f.remote.path);
+        console.log((f.uploaded ? ' ✓ ' : ' ■ ') + fill(f.path) + ' => ' + f.remote.path);
       });
       console.log(os.EOL);
 

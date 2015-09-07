@@ -152,6 +152,13 @@ function File(file, opts) {
    */
   this.type = opts.type || _detectFileType(file);
 
+
+  /**
+   * 标识文件是否被上传了
+   * @type {Boolean}
+   */
+  this.uploaded = false;
+
   /**
    * 远程服务器上的文件信息
    * @type {Object}
@@ -289,8 +296,19 @@ File.prototype.addAsset = function(asset) {
  * @private
  */
 function _upload(uploader, opts, cb) {
-  var files = _.filter(_.values(MAP), function(file) { return !_.includes(OPTS.inspectOnly, file.path); });
-  log.info('You have ' + files.length + ' files need upload, the max concurrent number is ' + opts.eachUploadLimit);
+
+  var ignores = (OPTS.inspectOnly || []).concat(OPTS.unuploadFiles);
+
+  var files = _.filter(_.values(MAP), function(file) { return !_.includes(ignores, file.path); });
+
+  if (files.length === 0) {
+    log.warn('Your files are ignored', ignores);
+    log.warn('No files need to upload');
+    // ftp 可能已经连接了，所以这里不能退出，否则 ftp 无法关闭连接
+  } else {
+    _.each(files, function (file) { file.uploaded = true; });
+    log.info('You have ' + files.length + ' files need upload, the max concurrent number is ' + opts.eachUploadLimit);
+  }
 
   if (uploader.enableBatchUpload) {
     uploader.batchUploadFiles(files, cb);
@@ -418,7 +436,8 @@ File.inspect = function(files, daOpts, cb) {
     _inspect(files);
     log.profiler('da', 'inspect end');
 
-    var uploader = Uploader.instance(daOpts.uploader, daOpts.uploaderOptions);
+    var uploaderOptions = daOpts.uploaders[daOpts.uploader] || daOpts.uploaderOptions;
+    var uploader = Uploader.instance(daOpts.uploader, uploaderOptions);
 
     log.profiler('da', 'update local files start');
     _.each(MAP, function(file) {
@@ -430,10 +449,12 @@ File.inspect = function(files, daOpts, cb) {
 
     if (!daOpts.dry) {
       log.profiler('da', 'upload to remote start');
+
       _upload(uploader, daOpts, function(err) {
         log.profiler('da', 'upload to remote end');
         cb(err, MAP);
       });
+
     } else {
       cb(null, MAP);
     }

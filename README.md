@@ -8,7 +8,7 @@
 [![Coverage Status][coveralls-image]][coveralls-url]
 
 
-分析本地的 Web 文件，将它所引用到的所有静态资源全部上传到七牛上去，并且保证引用关系不错乱
+分析本地的 Web 文件，将它所引用到的所有静态资源全部上传到 七牛/FTP (还可以自定义其它 [Uploader](./examples/custom-uploader.js) )上去，并且保证引用关系不错乱
 
 [Github Repo][project-url]
 
@@ -54,6 +54,54 @@ da(folder, globPatterns, options, function(err, fileMap) {
 ## 注意事项
 
 * 如果在 JS 或 JSON 中要引用某个文件，只要将它放在字符串中，保证带有至少一个路径（`/` 或 `\`），并且有后缀名，如 `.js`
+
+* __使用命令行时如果用了 glob，一定要加引号__ 
+
+  比如，如果你想排除所有图片文件用此命令：`da --excludes *.png`，但 *.png 会被 shell 解析成可能的 a.png b.png c.png，所以你的命令变成了：
+  `da --excludes a.png b.png c.png` 并不是你想要的结果。因而，需要加上引号写成 `da --excludes '*.png'`
+
+* 更新提醒
+ 
+v0.3.3 及其之前的版本，配置信息是放在 `uploaderOptions` 选项中的，为了实现支持多个 uploader 随意切换，现在将所有的 uploaders 配置放在 `uploaders` 中。（对于老版本的配置还是兼容的，但如果使用了新版本的配置就不会使用老版本的）
+
+如：以前的配置可以是：
+
+```
+{
+  uploader: 'qiniu',
+  uploaderOptions: {
+    ak: '...',
+    sk: '...',
+    bucket: '...',
+    domain: '...'
+  }
+}
+```
+
+现在的配置是：
+
+```
+{
+  uploader: 'qiniu',    // 默认的 uploader
+  uploaders: {          // 这里放的是所有支持的 uploader 的默认配置
+    qiuniu: {
+      ak: '...',
+      sk: '...',
+      bucket: '...',
+      domain: '...'
+    },
+    ftp: {
+      host: '....'
+      user: '...',
+      pass: '...',
+      port: 21,
+      baseUrl: '...',
+      destDir: '...'
+    }
+  }
+}
+```
+
 
 
 ## 调试
