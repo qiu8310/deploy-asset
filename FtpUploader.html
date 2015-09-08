@@ -189,7 +189,7 @@
 
             
 
-            <td class="description last"><p>FTP 密码，必须设置</p></td>
+            <td class="description last"><p>FTP 密码</p></td>
         </tr>
 
     
@@ -212,7 +212,7 @@
 
             
 
-            <td class="description last"><p>FTP 端口，默认是 22</p></td>
+            <td class="description last"><p>FTP 端口，可选配置，默认是 22</p></td>
         </tr>
 
     
@@ -576,7 +576,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line68">line 68</a>
+        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -599,6 +599,306 @@
 
 
 
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="normalizeBaseUrl"><span class="type-signature"></span>normalizeBaseUrl<span class="signature">(baseUrl)</span><span class="type-signature"> &rarr; {String}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>统一用户配置的 baseUrl 为带 http:// 前缀及后缀有 / 的一个 Url</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>baseUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Uploader.html#normalizeBaseUrl">Uploader#normalizeBaseUrl</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line39">line 39</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="normalizeError"><span class="type-signature"></span>normalizeError<span class="signature">(err)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>有些平台的 api 返回的错误并不是一个 js 的 Error 实例，这里把所有错误转化成一个 js 的 Error 实例</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Uploader.html#normalizeError">Uploader#normalizeError</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Error</p>
+</div>
+
+
+
+    
 
 
 
@@ -713,7 +1013,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line43">line 43</a>
+        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line68">line 68</a>
     </li></ul></dd>
     
 
@@ -879,7 +1179,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line56">line 56</a>
+        <a href="uploader.js.html">uploader.js</a>, <a href="uploader.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -921,13 +1221,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="File.html">File</a></li><li><a href="FtpUploader.html">FtpUploader</a></li><li><a href="QiniuUploader.html">QiniuUploader</a></li><li><a href="Uploader.html">Uploader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#da">da</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="File.html">File</a></li><li><a href="FtpUploader.html">FtpUploader</a></li><li><a href="QiniuUploader.html">QiniuUploader</a></li><li><a href="Uploader.html">Uploader</a></li><li><a href="UpyunUploader.html">UpyunUploader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#da">da</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Tue Sep 08 2015 11:29:48 GMT+0800 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Tue Sep 08 2015 22:49:52 GMT+0800 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

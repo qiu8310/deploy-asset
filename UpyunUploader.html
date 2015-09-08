@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: QiniuUploader</title>
+    <title>JSDoc: Class: UpyunUploader</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: QiniuUploader</h1>
+    <h1 class="page-title">Class: UpyunUploader</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2>
-        QiniuUploader
+        UpyunUploader
         </h2>
         
     
@@ -42,7 +42,7 @@
 
     
 
-    <h4 class="name" id="QiniuUploader"><span class="type-signature"></span>new QiniuUploader<span class="signature">(opts)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="UpyunUploader"><span class="type-signature"></span>new UpyunUploader<span class="signature">(opts)</span><span class="type-signature"></span></h4>
 
     
 
@@ -127,7 +127,7 @@
 
         <tr>
             
-                <td class="name"><code>ak</code></td>
+                <td class="name"><code>operator</code></td>
             
 
             <td class="type">
@@ -143,14 +143,14 @@
 
             
 
-            <td class="description last"><p>七牛的 access-key</p></td>
+            <td class="description last"><p>又拍云 的 操作员</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>sk</code></td>
+                <td class="name"><code>password</code></td>
             
 
             <td class="type">
@@ -166,7 +166,7 @@
 
             
 
-            <td class="description last"><p>七牛的 secret-key</p></td>
+            <td class="description last"><p>又拍云 的 操作员密码</p></td>
         </tr>
 
     
@@ -189,7 +189,7 @@
 
             
 
-            <td class="description last"><p>七牛的 bucket</p></td>
+            <td class="description last"><p>又拍云 的 bucket</p></td>
         </tr>
 
     
@@ -212,7 +212,76 @@
 
             
 
-            <td class="description last"><p>七牛的默认域名</p></td>
+            <td class="description last"><p>又拍云 的默认域名，如果不设置，默认是被配置为 [bucket].b0.upaiyun.com</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>destDir</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>要上传到的目标文件夹，默认使用根目录</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>又拍云 的 endpoint，默认是 v0</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>apiVersion</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>又拍云 的 apiVersion，默认是 legacy，并且当前只能是此值</p></td>
         </tr>
 
     
@@ -260,7 +329,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="uploaders_qiniu.js.html">uploaders/qiniu.js</a>, <a href="uploaders_qiniu.js.html#line17">line 17</a>
+        <a href="uploaders_upyun.js.html">uploaders/upyun.js</a>, <a href="uploaders_upyun.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
