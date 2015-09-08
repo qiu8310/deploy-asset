@@ -437,7 +437,8 @@ File.inspect = function(files, daOpts, cb) {
     log.profiler('da', 'inspect end');
 
     var uploaderOptions = daOpts.uploaders[daOpts.uploader] || daOpts.uploaderOptions;
-    var uploader = Uploader.instance(daOpts.uploader, uploaderOptions);
+    var uploaderKey = uploaderOptions.alias || daOpts.uploader;
+    var uploader = Uploader.instance(uploaderKey, uploaderOptions);
 
     log.profiler('da', 'update local files start');
     _.each(MAP, function(file) {

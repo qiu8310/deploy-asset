@@ -82,13 +82,14 @@ v0.3.3 及其之前的版本，配置信息是放在 `uploaderOptions` 选项中
 
 ```
 {
-  uploader: 'qiniu',    // 默认的 uploader
+  uploader: 'qiniu_1',    // 默认的 uploader
   uploaders: {          // 这里放的是所有支持的 uploader 的默认配置
-    qiuniu: {
+    qiniu_1: {
       ak: '...',
       sk: '...',
       bucket: '...',
-      domain: '...'
+      domain: '...',
+      alias: 'qiniu'  // alias 是可选的配置，如果不存在 qiniu_1 的 uploader，就一定要配置这个 alias，指到一个真实存在的 uploader
     },
     ftp: {
       host: '....'
