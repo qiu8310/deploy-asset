@@ -30,6 +30,31 @@ function Uploader(opts) {
   this.enableBatchUpload = false;
 }
 
+
+/**
+ * 统一用户配置的 baseUrl 为带 http:// 前缀及后缀有 / 的一个 Url
+ * @param {String} baseUrl
+ * @returns {String}
+ */
+Uploader.prototype.normalizeBaseUrl = function (baseUrl) {
+  return baseUrl.replace(/^(\w+:\/\/)?(.*?)(\/)?$/, function(raw, prefix, mid, postfix) {
+    return (prefix || 'http://') + mid + (postfix || '/');
+  });
+};
+
+
+/**
+ * 有些平台的 api 返回的错误并不是一个 js 的 Error 实例，这里把所有错误转化成一个 js 的 Error 实例
+ * @param {*} err
+ * @returns Error
+ */
+Uploader.prototype.normalizeError = function (err) {
+  if (!err) { return err; }
+  if (err && err instanceof Error) { return err; }
+
+  return new Error(JSON.stringify(err));
+};
+
 /**
  *
  * 通过当前文件信息，得到此文件在远程服务器上的 http 地址（文件还没上传）

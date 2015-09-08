@@ -66,8 +66,8 @@ function _findDown (ftp, dir, stack, cb) {
  * @param {Object} opts
  * @param {String} opts.host      - FTP 域名
  * @param {String} opts.user      - FTP 用户名
- * @param {String} opts.pass      - FTP 密码，必须设置
- * @param {Number} opts.port      - FTP 端口，默认是 22
+ * @param {String} opts.pass      - FTP 密码
+ * @param {Number} opts.port      - FTP 端口，可选配置，默认是 22
  * @param {String} opts.destDir   - 要上传到 FTP 上的的目录
  * @param {String} opts.baseUrl   - 站点基准 url
  *
@@ -78,7 +78,7 @@ function FtpUploader(opts) {
   var self = this;
   ['host', 'user', 'pass', 'destDir', 'baseUrl'].forEach(function(key) {
     if (!opts[key] && !_.isString(opts[key])) {
-      throw new Error('Please set your ftp\'s ' + key + ' option to valid String Value');
+      throw new Error('Please set your ftp\'s ' + key + ' option to a valid String value');
     }
     self[key] = opts[key];
   });
@@ -87,11 +87,7 @@ function FtpUploader(opts) {
 
   self.ftp = new FTP({host: self.host, user: self.user, pass: self.pass, port: self.port});
 
-
-  self.baseUrl = self.baseUrl.replace(/^(\w+:\/\/)?(.*?)(\/)?$/, function(raw, prefix, mid, postfix) {
-    return (prefix || 'http://') + mid + (postfix || '/');
-  });
-
+  self.baseUrl = self.normalizeBaseUrl(opts.baseUrl);
   self.enableBatchUpload = true;
 }
 

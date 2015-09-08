@@ -142,19 +142,24 @@ function _checkOpts(opts) {
   opts.unbrokenFiles = _batchGlob(opts.unbrokenFiles, opts.glob);
   opts.unuploadFiles = _batchGlob(opts.unuploadFiles, opts.glob);
   opts.useAbsoluteRefFiles = _batchGlob(opts.useAbsoluteRefFiles, opts.glob);
+
+
+  // 确保 uploader 配置
+  var uploader = opts.uploader;
+  var uploaderOptions = opts.uploaders[uploader] || opts.uploaderOptions;
+  uploader = uploaderOptions.alias || uploader;
+  opts.uploader = uploader;
+  opts.uploaderOptions = uploaderOptions;
 }
 
 /**
  * 自动注册 Uploader
  * @private
  */
-function _autoRegisterUploader(uploaders) {
-  if (uploaders && !Array.isArray(uploaders)) { uploaders = [uploaders]; }
-  ['qiniu', 'ftp'].forEach(function(key) {
-    if (!uploaders || uploaders.indexOf(key) >= 0) {
-      Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
-    }
-  });
+function _autoRegisterUploader(key) {
+  try {
+    Uploader.register(key, require(path.join(__dirname, 'uploaders', key)));
+  } catch (e) {}
 }
 
 
@@ -291,7 +296,6 @@ function da(dir, globPatterns, opts, callback) {
     prefix: ''
   }, daRcOpts, opts);
 
-
   log.level = opts.logLevel;
 
   log.profiler('da', 'all start');
@@ -352,6 +356,7 @@ function da(dir, globPatterns, opts, callback) {
   } else {
 
     log.info('Register uploader', inspectFiles);
+
     _autoRegisterUploader(opts.uploader);
 
     log.info('Inspect files', inspectFiles);

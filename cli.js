@@ -11,7 +11,7 @@ var program = require('commander');
 program
   .version(require(require('path').join(__dirname, 'package.json')).version)
   .usage('[options] <directory> <globPatterns>')
-  .description('Deploy the directory\'s static files to supported server (Only support qiniu for now).' +
+  .description('Deploy the directory\'s static files to supported server (support qiniu/ftp/upyun for now).' +
     '\r\n  More detail about options on: https://qiu8310.github.io/deploy-asset/global.html#da')
 
   .option('-i, --includes <globPatterns>', 'include files, support glob pattern')
@@ -87,7 +87,7 @@ function write(filePath, data) {
 
 require('./')(dir, globPatterns, opts, function(err, all) {
   if (err) {
-    console.error(err.stack);
+    console.error(err.stack || err);
   } else {
     if (_.size(all)) {
       var max  = _.max(all, function(f) { return f.path.length; }).path.length;
