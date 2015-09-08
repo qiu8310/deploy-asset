@@ -40,6 +40,7 @@ program
   .option('--css-exts <cssExts>', 'set css file extensions for detect file\'s type')
 
   .option('-l, --log-level <logLevel>', 'set log level, support: silly, verbose, profiler, info, warn, error, silent')
+  .option('--no-home-log', 'disable log uploaded files to home directory named .da_log')
   .option('--verbose', 'set log level to verbose')
   .option('--silent', 'set log level to silent')
   .option('--info', 'set log level to info')
@@ -94,12 +95,21 @@ require('./')(dir, globPatterns, opts, function(err, all) {
         return (new Array(max - str.length + 2)).join(' ') + str;
       };
       console.log(os.EOL);
-      var outMap = {};
+      var outMap = {}, logMap = {};
       _.each(all, function(f) {
-        outMap[f.path] = f.remote.path;
-        console.log((f.uploaded ? ' ✓ ' : ' ■ ') + fill(f.path) + ' => ' + f.remote.path);
+        var remote = f.uploaded ? f.remote.path : '(Not uploaded)';
+        outMap[f.path] = remote;
+        logMap[path.resolve(f.path)] = remote;
+
+        console.log((f.uploaded ? ' ✓ ' : ' ■ ') + fill(f.path) + ' => ' + remote);
       });
       console.log(os.EOL);
+
+      if (!program.noHomeLog) {
+        var daLogDir = path.join(path.homedir(), '.da_log');
+        fs.ensureDirSync(daLogDir);
+        write(path.join(daLogDir, Date.now() + '.log.json'), logMap);
+      }
 
       if (program.mapLocalPath) {
         write(program.mapLocalPath, _.keys(outMap));

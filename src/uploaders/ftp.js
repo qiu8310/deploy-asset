@@ -88,8 +88,8 @@ function FtpUploader(opts) {
   self.ftp = new FTP({host: self.host, user: self.user, pass: self.pass, port: self.port});
 
 
-  self.baseUrl = self.baseUrl.replace(/^(\w+:\/\/)?.*?(\/)?$/, function(raw, prefix, postfix) {
-    return (prefix || 'http://') + raw + (postfix || '/');
+  self.baseUrl = self.baseUrl.replace(/^(\w+:\/\/)?(.*?)(\/)?$/, function(raw, prefix, mid, postfix) {
+    return (prefix || 'http://') + mid + (postfix || '/');
   });
 
   self.enableBatchUpload = true;

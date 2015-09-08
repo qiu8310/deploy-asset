@@ -51,8 +51,9 @@ function QiniuUploader(opts) {
 
   qiniu.conf.ACCESS_KEY = self.ak;
   qiniu.conf.SECRET_KEY = self.sk;
-  self.domain = self.domain.replace(/^(\w+:\/\/)?.*?(\/)?$/, function(raw, prefix, postfix) {
-    return (prefix || 'http://') + raw + (postfix || '/');
+
+  self.domain = self.domain.replace(/^(\w+:\/\/)?(.*?)(\/)?$/, function(raw, prefix, mid, postfix) {
+    return (prefix || 'http://') + mid + (postfix || '/');
   });
 }
 
