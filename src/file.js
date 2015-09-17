@@ -66,13 +66,15 @@ function _reBasename(oldBasename, path, content) {
   }
 
   var len = _.isNumber(OPTS.rename) ? OPTS.rename : 8;
-  var md5 = crypto.createHash('md5');
-  md5.update(content.toString());
 
-  var ext, hash = md5.digest('hex');
+  if (len === -1) { return oldBasename; }
+
+  var hash, md5 = crypto.createHash('md5');
+  md5.update(content.toString());
+  hash = md5.digest('hex');
 
   if (len === 0) {
-    ext = oldBasename.split('.').pop().slice(-10); // 最长 10 位
+    var ext = oldBasename.split('.').pop().slice(-10); // 最长 10 位
     return hash + '.' + ext;
   }
 
@@ -163,8 +165,15 @@ function File(file, opts) {
    * 远程服务器上的文件信息
    * @type {Object}
    */
+  var newBasename = _reBasename(this.basename, this.path, this.content);
+  if (OPTS.suffix) {
+    newBasename = newBasename.split('.');
+    newBasename[newBasename.length > 1 ? newBasename.length - 2 : 0] += OPTS.suffix;
+    newBasename = newBasename.join('.');
+  }
+
   this.remote = {
-    basename: OPTS.prefix + _reBasename(this.basename, this.path, this.content),
+    basename: OPTS.prefix + newBasename,
     path: null
   };
 }

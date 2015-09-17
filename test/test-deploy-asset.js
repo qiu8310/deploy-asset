@@ -67,8 +67,8 @@ describe('deployAsset', function () {
       da(basicRoot, {deep: 1});
     });
 
-    it('should throws if opts.rename less then 0', function() {
-      assert.throws(function() { da(basicRoot, {rename: -1}); });
+    it('should throws if opts.rename less then -1', function() {
+      assert.throws(function() { da(basicRoot, {rename: -3}); });
       assert.throws(function() { da(basicRoot, {rename: -2}); });
 
       ept.once();

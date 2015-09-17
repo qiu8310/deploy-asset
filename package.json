@@ -22,7 +22,10 @@
     "web-deploy",
     "cdn",
     "server-deploy",
-    "static"
+    "static",
+    "ftp",
+    "qiniu",
+    "upyun"
   ],
   "dependencies": {
     "alter": "^0.2.0",

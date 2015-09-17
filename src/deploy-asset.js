@@ -131,7 +131,7 @@ function _checkOpts(opts) {
   }
   if (_.isNumber(opts.rename)) {
     opts.rename = parseInt(opts.rename, 10);
-    assert(opts.rename >= 0, 'opts.rename should larger or equal than 0 or should be a Function.');
+    assert(opts.rename >= -1, 'opts.rename should larger or equal than -1 or should be a Function.');
   }
 
   opts.excludes = _toArray(opts.excludes);
@@ -142,7 +142,6 @@ function _checkOpts(opts) {
   opts.unbrokenFiles = _batchGlob(opts.unbrokenFiles, opts.glob);
   opts.unuploadFiles = _batchGlob(opts.unuploadFiles, opts.glob);
   opts.useAbsoluteRefFiles = _batchGlob(opts.useAbsoluteRefFiles, opts.glob);
-
 
   // 确保 uploader 配置
   var uploader = opts.uploader;
@@ -226,6 +225,7 @@ function _autoRegisterUploader(key) {
  *                                                        支持使用 {@link https://github.com/isaacs/node-glob glob}
  * @param {String|Boolean}  [opts.outDir = false]        - 输出分析后的文件到此文件夹，如果设置为 false 则不会输出生成的文件
  * @param {String}          [opts.prefix = '']           - 输出的新的文件名的前缀
+ * @param {String}          [opts.suffix = '']           - 输出的新的文件名的后缀
  * @param {String}          [opts.logLevel = 'warn']     - 打印的日志级别，
  *                                                         可以为 silly, verbose, profiler, info, warn, error, silent
  *
@@ -235,6 +235,7 @@ function _autoRegisterUploader(key) {
  * @param {Integer|RenameFunction}  [opts.rename = 8]   - 重命名文件的 basename
  *
  *  - 如果是 0 ，会忽略文件的名称，完全使用 hash 字符串，如 770b95bb61d5b0406c135b6e42260580.js
+ *  - 如果是 -1，则不会添加任何 hash 字符串
  *  - 如果是 Integer，会加上 `rename` 个 hash 字符在 basename 后面，如 rename = 4, base.js => base-23ab.js
  *  - 如果是 Function，则会调用此 function 来返回新的 basename
  *
@@ -270,6 +271,12 @@ function da(dir, globPatterns, opts, callback) {
     }
   });
 
+  // 获取 rc 文件中的 uploader 的 options 的配置
+  var _uploader = opts && opts.uploader || daRcOpts.uploader;
+  var _uploaderOptions = _uploader && daRcOpts.uploaders ? daRcOpts.uploaders[_uploader] : null;
+  var uploaderDaRcOptions = _uploaderOptions && _uploaderOptions.options || {};
+
+
   // 默认配置项
   opts = _.assign({
     deep: false,
@@ -282,8 +289,8 @@ function da(dir, globPatterns, opts, callback) {
 
     force: false,
     dry: false,
-    uploader: 'qiniu',
     eachUploadLimit: (os.cpus().length || 1) * 2,
+    uploader: 'qiniu',
     uploaderOptions: {},
     uploaders: {},
     htmlExts: 'html,htm',
@@ -293,8 +300,9 @@ function da(dir, globPatterns, opts, callback) {
     outDir: false,
     rename: 8,
     logLevel: 'warn',
+    suffix: '',
     prefix: ''
-  }, daRcOpts, opts);
+  }, daRcOpts, uploaderDaRcOptions, opts);
 
   log.level = opts.logLevel;
 

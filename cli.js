@@ -23,8 +23,11 @@ program
   .option('-u --uploader <uploader>', 'specified the uploader')
   .option('-d, --deep <deep>', 'set directory\'s deep, default is 0', parseInt)
   .option('--limit <eachUploadLimit>', 'the max concurrent upload files number', parseInt)
-  .option('--hash <rename>', 'how many hash chars append to file basename', parseInt)
-  .option('-p, --prefix <prefix>', 'append a string to file basename')
+  .option('--hash <rename>', 'how many hash chars append to file basename: -1 => no-hash, 0 => all-hash', parseInt)
+  .option('--no-rename', 'equal to `--hash="-1"`')
+  
+  .option('-p, --prefix <prefix>', 'prepend a string to file basename')
+  .option('-s, --suffix <suffix>', 'append a string to file basename')
   .option('-o, --out-dir <outDir>', 'output all uploaded file in local directory')
 
   .option('--map-path <newFilePath>', 'output local file and remote file\'s relation to a json file')
@@ -57,13 +60,15 @@ if (program.configFile) { _.assign(opts, require(program.configFile)); }
 if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
 ('deep,includes,excludes,unbroken,unupload,absolute,force,dry,uploader,limit,htmlExts' +
-'jsExts,cssExts,jsonExts,hash,outDir,prefix,logLevel').split(',').forEach(function(key) {
+'jsExts,cssExts,jsonExts,hash,outDir,prefix,suffix,logLevel').split(',').forEach(function(key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
     }
   }
 );
-
+if (!program.rename) {
+  opts.rename = -1;
+}
 
 ['verbose', 'silent', 'info'].forEach(function(key) { if (key in program) { opts.logLevel = key; } });
 if (!_.isString(opts.outDir)) { opts.outDir = false; }
@@ -105,7 +110,7 @@ require('./')(dir, globPatterns, opts, function(err, all) {
       });
       console.log(os.EOL);
 
-      if (!program.noHomeLog) {
+      if (program.homeLog) {
         var daLogDir = path.join(path.homedir(), '.da_log');
         fs.ensureDirSync(daLogDir);
         write(path.join(daLogDir, Date.now() + '.log.json'), logMap);
