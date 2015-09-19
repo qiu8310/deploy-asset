@@ -85,6 +85,7 @@ function FtpUploader(opts) {
 
   self.port = opts.port || 21;
 
+  log.info('Create ftp');
   self.ftp = new FTP({host: self.host, user: self.user, pass: self.pass, port: self.port});
 
   self.baseUrl = self.normalizeBaseUrl(opts.baseUrl);
@@ -129,7 +130,6 @@ FtpUploader.prototype.batchUploadFiles = function(files, cb) {
       self.endFtp();
       return cb(err);
     }
-
     async.eachSeries(
       files,
       function (file, done) {

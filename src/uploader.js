@@ -28,6 +28,7 @@ function Uploader(opts) {
    * @type {Boolean}
    */
   this.enableBatchUpload = false;
+
 }
 
 

@@ -35,7 +35,7 @@
     "commander": "^2.8.0",
     "fs-extra": "^0.18.2",
     "glob": "^5.0.5",
-    "jsftp": "^1.5.2",
+    "jsftp": "qiu8310/jsftp",
     "lodash": "^3.7.0",
     "mime": "^1.3.4",
     "mkdirp": "^0.5.0",

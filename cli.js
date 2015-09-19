@@ -112,8 +112,16 @@ require('./')(dir, globPatterns, opts, function(err, all) {
 
       if (program.homeLog) {
         var daLogDir = path.join(path.homedir(), '.da_log');
+        var d = new Date();
+        var s = ['FullYear', 'Month', 'Date', 'Hours', 'Minutes', 'Seconds'].map(function (k) {
+          var v = d['get' + k]();
+          if (k === 'Month') v += 1;
+          v = new String(v);
+          if (v.length < 2) v = '0' + v;
+          return v;
+        });
         fs.ensureDirSync(daLogDir);
-        write(path.join(daLogDir, Date.now() + '.log.json'), logMap);
+        write(path.join(daLogDir, s.join('-') + '.log.json'), logMap);
       }
 
       if (program.mapLocalPath) {
