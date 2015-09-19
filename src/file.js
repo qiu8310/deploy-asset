@@ -99,9 +99,13 @@ function _detectFileType(filepath) {
  * @param {String} file - 文件路径
  * @param {Object} opts
  * @param {File.TYPE} [opts.type = File.TYPE.STATIC] - 指定文件的类型
+ * @param {String} rootDir - 此文件的根目录，用于计算原程目录
  * @class
  */
-function File(file, opts) {
+function File(file, opts, rootDir) {
+
+  var relativeDir = path.relative(rootDir, path.dirname(file));
+
   /**
    * 所有引用了此文件的 Files
    * @type {Array}
@@ -129,6 +133,18 @@ function File(file, opts) {
    * @type {String}
    */
   this.dirname = path.dirname(file);
+
+  /**
+   * 此文件的根目录，用于计算相对目录
+   * @type {String}
+   */
+  this.rootDir = rootDir;
+
+  /**
+   * 此文件的相对目录，原程目录可以参考
+   * @type {String}
+   */
+  this.relativeDir = relativeDir;
 
   /**
    * 当前文件的内容
@@ -174,6 +190,7 @@ function File(file, opts) {
 
   this.remote = {
     basename: OPTS.prefix + newBasename,
+    relative: OPTS.flat ? '' : relativeDir,
     path: null
   };
 }
@@ -354,7 +371,7 @@ function _inspect (files, caller) {
     }
 
     if (!MAP[f]) {
-      var file = new File(f, opts);
+      var file = new File(f, opts, OPTS.dir);
       MAP[f] = file;
 
       if (caller) { file.addCaller(caller); }

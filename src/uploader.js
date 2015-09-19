@@ -29,6 +29,16 @@ function Uploader(opts) {
    */
   this.enableBatchUpload = false;
 
+
+  /**
+   *  是否支持将静态资源扁平化
+   *
+   *  扁平化即将所有静态资源的目录结构去掉，所以文件都放在一个目录下
+   *
+   *  @type {Boolean}
+   *
+   */
+  this.supportFlatAssets = false;
 }
 
 

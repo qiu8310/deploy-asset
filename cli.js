@@ -24,7 +24,6 @@ program
   .option('-d, --deep <deep>', 'set directory\'s deep, default is 0', parseInt)
   .option('--limit <eachUploadLimit>', 'the max concurrent upload files number', parseInt)
   .option('--hash <rename>', 'how many hash chars append to file basename: -1 => no-hash, 0 => all-hash', parseInt)
-  .option('--no-rename', 'equal to `--hash="-1"`')
   
   .option('-p, --prefix <prefix>', 'prepend a string to file basename')
   .option('-s, --suffix <suffix>', 'append a string to file basename')
@@ -33,6 +32,9 @@ program
   .option('--map-path <newFilePath>', 'output local file and remote file\'s relation to a json file')
   .option('--map-local-path <newFilePath>', 'output local file paths to a json file')
   .option('--map-remote-path <newFilePath>', 'output remote file paths to a json file')
+
+  .option('--flat', 'flat assets, qiniu uploader do not support this')
+  .option('--dest-dir <destDir>', 'remote dest dir your want put your assets files to, qiniu uploader do not support this')
 
   .option('--force', 'disable throws error when assets not exist while they should exist')
   .option('--dry', 'don\'t upload, just output the result')
@@ -60,15 +62,12 @@ if (program.configFile) { _.assign(opts, require(program.configFile)); }
 if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
 ('deep,includes,excludes,unbroken,unupload,absolute,force,dry,uploader,limit,htmlExts' +
-'jsExts,cssExts,jsonExts,hash,outDir,prefix,suffix,logLevel').split(',').forEach(function(key) {
+'jsExts,cssExts,jsonExts,hash,outDir,flat,destDir,prefix,suffix,logLevel').split(',').forEach(function(key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
     }
   }
 );
-if (!program.rename) {
-  opts.rename = -1;
-}
 
 ['verbose', 'silent', 'info'].forEach(function(key) { if (key in program) { opts.logLevel = key; } });
 if (!_.isString(opts.outDir)) { opts.outDir = false; }

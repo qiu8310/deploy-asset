@@ -78,8 +78,14 @@ function UpyunUploader(opts) {
   self.destDir = normalizeDir(opts.destDir);
   self.domain = self.normalizeBaseUrl(self.domain);
   self.upyun = new Upyun(self.bucket, self.operator, self.password, self.endpoint, self.apiVersion);
+
+  self.supportFlatAssets = true;
 }
 
+
+UpyunUploader.prototype.getDestFile = function(file) {
+  return path.join(this.destDir, file.remote.relative, file.remote.basename);
+};
 
 /**
  *
@@ -89,7 +95,7 @@ function UpyunUploader(opts) {
  * @borrows Uploader.setFileRemotePath
  */
 UpyunUploader.prototype.setFileRemotePath = function(file) {
-  file.remote.path = this.domain + this.destDir.slice(1) + file.remote.basename;
+  file.remote.path = this.domain + this.getDestFile(file).slice(1);
 };
 
 /**
@@ -100,25 +106,23 @@ UpyunUploader.prototype.setFileRemotePath = function(file) {
  */
 UpyunUploader.prototype.uploadFile = function(file, cb) {
   var self = this;
-  if (!this.isDestDirSetuped) {
-    setupDestDir(this.upyun, this.destDir, function (err) {
-      self.isDestDirSetuped = true;
-      if (err) { return cb(self.normalizeError(err)); }
-      self.uploadFile(file, cb);
-    });
-  } else {
-    var destFile = this.destDir + file.remote.basename;
-    var type = mime.lookup(file.path);
-    this.upyun.uploadFile(destFile, file.content, type, true, function (err, res) {
+  var destFile = this.getDestFile(file);
+  var destDir = path.dirname(destFile);
+  var destFileType = mime.lookup(file.path);
+
+  setupDestDir(this.upyun, destDir, function(err) {
+    if (err) return cb(self.normalizeError(err));
+    self.upyun.uploadFile(destFile, file.content, destFileType, true, function(err, res) {
       cb(self.normalizeError(err || res.error));
     });
-  }
+  });
 };
 
 
 /* 为了生成好看点的 jsdoc 文档才这样写的 */
 module.exports = Uploader.extend({
   constructor: UpyunUploader,
+  getDestFile: UpyunUploader.prototype.getDestFile,
   setFileRemotePath: UpyunUploader.prototype.setFileRemotePath,
   uploadFile: UpyunUploader.prototype.uploadFile
 });

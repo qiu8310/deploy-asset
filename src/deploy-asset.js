@@ -149,6 +149,9 @@ function _checkOpts(opts) {
   uploader = uploaderOptions.alias || uploader;
   opts.uploader = uploader;
   opts.uploaderOptions = uploaderOptions;
+
+  opts.uploaderOptions.flat = opts.flat;
+  if (typeof opts.destDir === 'string') opts.uploaderOptions.destDir = opts.destDir;
 }
 
 /**
@@ -232,12 +235,15 @@ function _autoRegisterUploader(key) {
  *
  * @param {Integer|Boolean}         [opts.deep = false] - 指定要遍历文件夹的深度（ globPatterns 需要为 null ）
  *                                                        true: 递归，false|0: 当前文件夹，其它数字表示指定的深度
- * @param {Integer|RenameFunction}  [opts.rename = 8]   - 重命名文件的 basename
+ * @param {Integer|RenameFunction}  [opts.rename = -1]   - 重命名文件的 basename
  *
  *  - 如果是 0 ，会忽略文件的名称，完全使用 hash 字符串，如 770b95bb61d5b0406c135b6e42260580.js
  *  - 如果是 -1，则不会添加任何 hash 字符串
  *  - 如果是 Integer，会加上 `rename` 个 hash 字符在 basename 后面，如 rename = 4, base.js => base-23ab.js
  *  - 如果是 Function，则会调用此 function 来返回新的 basename
+ *
+ * @param {Boolean}   [opts.flat = false]               - 是否将静态资源扁平化处理，七牛总是会扁平化处理
+ * @param {String}    [opts.destDir = null]             - 要将静态资源发布到的远程目录，七牛不支持此选项
  *
  * @param {String}    [opts.htmlExts = 'html,htm']      - 指定 html 文件可能的后缀名
  * @param {String}    [opts.jsExts = 'js']              - 指定 js 文件可能的后缀名
@@ -287,6 +293,8 @@ function da(dir, globPatterns, opts, callback) {
     unbrokenFiles: [],
     unuploadFiles: [],
 
+    flat: false,
+    destDir: null,
     force: false,
     dry: false,
     eachUploadLimit: (os.cpus().length || 1) * 2,

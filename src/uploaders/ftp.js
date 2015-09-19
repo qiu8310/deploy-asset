@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  */
 
-var FTP = require('jsftp');
+var FTP = require('jsftp-mkdirp')(require('jsftp'));
 var path = require('path');
 var log = require('npmlog');
 var async = require('async');
@@ -14,47 +14,6 @@ var _ = require('lodash');
 
 
 var Uploader = require('../uploader');
-
-
-
-
-function _findUp (ftp, dir, cb, stack) {
-  stack = stack || [];
-  log.info('Try cwd to', dir);
-  ftp.raw.cwd(dir, function (err) {
-    if (err) {
-      if (err.code === 550) {
-        stack.unshift(path.basename(dir));
-        _findUp(ftp, path.dirname(dir), cb, stack);
-      } else {
-        cb(err);
-      }
-    } else {
-      log.info('Success cwd to', dir);
-      if (stack.length === 0) {
-        cb();
-      } else {
-        _findDown(ftp, '', stack, cb);
-      }
-    }
-  });
-}
-
-function _findDown (ftp, dir, stack, cb) {
-  if (stack.length === 0) {
-    ftp.raw.cwd(dir, cb);
-  } else {
-    dir = path.join(dir, stack.shift());
-    log.info('Mkdir', dir);
-    ftp.raw.mkd(dir, function (err) {
-      if (err) {
-        cb(err);
-      } else {
-        _findDown(ftp, dir, stack, cb);
-      }
-    });
-  }
-}
 
 
 /**
@@ -84,12 +43,15 @@ function FtpUploader(opts) {
   });
 
   self.port = opts.port || 21;
+  var appendDestDirToBaseUrl = ('appendDestDirToBaseUrl' in opts) ? opts.appendDestDirToBaseUrl : true;
 
   log.info('Create ftp');
   self.ftp = new FTP({host: self.host, user: self.user, pass: self.pass, port: self.port});
 
   self.baseUrl = self.normalizeBaseUrl(opts.baseUrl);
+  if (appendDestDirToBaseUrl) self.baseUrl += self.destDir.replace(/^\/|\/$/g, '') + '/';
   self.enableBatchUpload = true;
+  self.supportFlatAssets = true;
 }
 
 
@@ -102,7 +64,11 @@ FtpUploader.prototype.endFtp = function () {
 };
 
 FtpUploader.prototype.cwdFtp = function (dir, cb) {
-  _findUp(this.ftp, dir, cb);
+  var self = this;
+  this.ftp.mkdirp(dir, function (err) {
+    if (err) return cb(err);
+    self.ftp.raw.cwd(dir, cb);
+  });
 };
 
 
@@ -114,7 +80,7 @@ FtpUploader.prototype.cwdFtp = function (dir, cb) {
  * @borrows Uploader.setFileRemotePath
  */
 FtpUploader.prototype.setFileRemotePath = function(file) {
-  file.remote.path = this.baseUrl + file.remote.basename;
+  file.remote.path = this.baseUrl + path.join(file.remote.relative, file.remote.basename);
 };
 
 /**
@@ -125,21 +91,30 @@ FtpUploader.prototype.setFileRemotePath = function(file) {
  */
 FtpUploader.prototype.batchUploadFiles = function(files, cb) {
   var self = this;
+
+  var end = function (err) {
+    self.endFtp();
+    cb(err);
+  };
+
+  var iterate = function (file, done) {
+    var relative = file.remote.relative;
+    var remotePath = path.join(relative, file.remote.basename);
+    var put = function () {
+      self.ftp.put(file.content, remotePath, done);
+    };
+
+    if (!relative) return put();
+
+    self.ftp.mkdirp(path.join(self.destDir, relative), function (err) {
+      if (err) return done(err);
+      put();
+    });
+  };
+
   this.cwdFtp(this.destDir, function (err) {
-    if (err) {
-      self.endFtp();
-      return cb(err);
-    }
-    async.eachSeries(
-      files,
-      function (file, done) {
-        self.ftp.put(file.content, file.remote.basename, done);
-      },
-      function (err) {
-        self.endFtp();
-        cb(err);
-      }
-    );
+    if (err) return end(err);
+    async.eachSeries(files, iterate, end);
   });
 };
 
