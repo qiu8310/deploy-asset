@@ -306,7 +306,7 @@ function da(dir, globPatterns, opts, callback) {
     cssExts: 'css',
     jsonExts: 'json',
     outDir: false,
-    rename: 8,
+    rename: -1,
     logLevel: 'warn',
     suffix: '',
     prefix: ''
