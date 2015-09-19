@@ -50,18 +50,93 @@
 <a href="http://inch-ci.org/github/qiu8310/deploy-asset"><img src="http://inch-ci.org/github/qiu8310/deploy-asset.svg?branch=master" alt="Inline docs"></a>
 <a href="https://codeclimate.com/github/qiu8310/deploy-asset"><img src="https://codeclimate.com/github/qiu8310/deploy-asset/badges/gpa.svg" alt="Code Climate"></a>
 <a href="https://coveralls.io/r/qiu8310/deploy-asset"><img src="https://coveralls.io/repos/qiu8310/deploy-asset/badge.png" alt="Coverage Status"></a></p>
-<p>分析本地的 Web 文件，将它所引用到的所有静态资源全部上传到 七牛/FTP (还可以自定义其它 <a href="./examples/custom-uploader.js">Uploader</a> )上去，并且保证引用关系不错乱</p>
+<p>分析本地的 Web 文件，将它们及它们所引用到的所有静态资源全部上传到 七牛、FTP 或者 又拍云 (还可以自定义其它 <a href="./examples/custom-uploader.js">Uploader</a> )上，并且保证引用关系不错乱</p>
 <p><a href="https://github.com/qiu8310/deploy-asset">Github Repo</a></p>
 <p><a href="http://qiu8310.github.io/deploy-asset">JSDOC Generated Document</a></p>
 <h2>安装</h2><pre class="prettyprint source lang-bash"><code>npm install --global deploy-asset</code></pre><h2>使用</h2><h3>命令行</h3><pre class="prettyprint source lang-bash"><code>
-da &lt;folder> [options]
-
-da --help # show all options</code></pre><h3>Node 脚本</h3><pre class="prettyprint source lang-javascript"><code>var da = require('deploy-asset')
+da &lt;folder> [options]</code></pre><p><strong>请使用 <code>da --help</code> 来查看所有支持的配置</strong></p>
+<h4>使用命令行的例子：（要先配置好 uploaders）</h4><ul>
+<li><p>发布一个单独的图片文件到七牛上去</p>
+<p><code>da path/to/example.png --uploader qiniu</code></p>
+</li>
+<li><p>发布当前目录下所有的 png 图片</p>
+<p><code>da &quot;*.png&quot;</code>  注意如果使用了通配符，一定要加上引号，否则很容易出错</p>
+</li>
+<li><p>发布当前目录下的 index.html 文件</p>
+<p>如果 index.html 引用了 app.js 和 app.css，而 app.css 引用了 hero.png 图片，即它们关系是</p>
+<pre class="prettyprint source"><code>  index.html
+    | -- scripts
+          | -- app.js
+    | -- styles
+          | -- app.css
+    | -- images
+          | -- hero.png</code></pre><p>在这种情况下，你还是只需要执行 <code>da index.html</code>，它会自动找到文件的引用关系，将它们上传到服务器，并根据服务器的路径，修改它们的引用关系    </p>
+<p>执行后的结果可能是：</p>
+<pre class="prettyprint source"><code>  ✓         index.html => http://7u2rjq.com1.z0.glb.clouddn.com/index-d85f46.html
+  ✓     scripts/app.js => http://7u2rjq.com1.z0.glb.clouddn.com/app-2bd0f1.js
+  ✓     styles/app.css => http://7u2rjq.com1.z0.glb.clouddn.com/app-d41d8c.css
+  ✓    images/hero.png => http://7u2rjq.com1.z0.glb.clouddn.com/hero-d41d8c.png</code></pre></li>
+</ul>
+<h3>Node 脚本</h3><pre class="prettyprint source lang-javascript"><code>var da = require('deploy-asset')
 
 da(folder, globPatterns, options, function(err, fileMap) {
   // ...
-})</code></pre><h3>Grunt</h3><p><a href="https://github.com/qiu8310/grunt-deploy-asset">grunt-deploy-asset</a></p>
+})</code></pre><p>// 查看配置参数 <a href="https://qiu8310.github.io/deploy-asset/global.html#da">https://qiu8310.github.io/deploy-asset/global.html#da</a></p>
+<h3>Grunt</h3><p><a href="https://github.com/qiu8310/grunt-deploy-asset">grunt-deploy-asset</a></p>
 <h2>Options</h2><p><a href="https://qiu8310.github.io/deploy-asset/global.html#da">Click Here To See All Options</a></p>
+<h2>配置文件</h2><ul>
+<li><p>配置文件使用的库是 <a href="https://github.com/dominictarr/rc">rc</a>，它会自动在你项目所在的目录及各级父目录和当前用户根目录下查找 <code>.darc</code> 文件，将所有找到的文件合并（最先找到的会覆盖后面找到的）。</p>
+</li>
+<li><p>此项目主要需要配置的选项是 <code>uploaders</code>，其它都可以通过命令行配置，下面是一个 ftp 的配置例子：</p>
+<p>在你的用户根目录新建一个 <code>.darc</code> 文件，并填入下面代码（注意去掉代码中的注释）</p>
+<pre class="prettyprint source lang-json"><code>{
+  &quot;uploader&quot;: &quot;ftp_stage&quot;,  // 默认的 上传器
+  &quot;uploaders&quot;: {
+    &quot;ftp_stage&quot;: {
+      &quot;alias&quot;: &quot;ftp&quot;,   // 这个一定要写，告诉系统这是个 ftp 的配置
+      &quot;host&quot;: &quot;....&quot;,
+      &quot;user&quot;: &quot;...&quot;,
+      &quot;pass&quot;: &quot;...&quot;,
+      &quot;port&quot;: 21,
+      &quot;baseUrl&quot;: &quot;http://www.you_server/welcome/abc&quot;, // 这里只是个例子，根据你的实际情况修改
+      &quot;destDir&quot;: &quot;welcome/abc&quot;
+    },
+    &quot;ftp_prod&quot;: {
+      &quot;alias&quot;: &quot;ftp&quot;, 
+      &quot;host&quot;: &quot;....&quot;,
+      &quot;user&quot;: &quot;...&quot;,
+      &quot;pass&quot;: &quot;...&quot;,
+      &quot;port&quot;: 21,
+      &quot;baseUrl&quot;: &quot;...&quot;,
+      &quot;destDir&quot;: &quot;...&quot;
+    }
+  }
+}</code></pre><p>这样配置好了之后你就可以使用 <code>da .</code> 来将文件发布到 stage 的 ftp 上，而运行 <code>da . --uploader ftp_prod</code> 来将文件发布到 production 环境上去。</p>
+</li>
+</ul>
+<ul>
+<li><p>另外支持的 七牛 和 又拍云的配置格式如下（可以将所有相关的配置都放在 <code>uploaders</code> 中，这里是为了说明才分开说的）：</p>
+<pre class="prettyprint source lang-json"><code>{
+  &quot;uploaders&quot;: {
+    &quot;qiniu&quot;: {
+      &quot;alias&quot;: &quot;qiniu&quot;,  // 如果 alias 的值，和它对应在 uploaders 下的 key 的值一样（此处都是 qiniu），则可忽略 alias
+      &quot;ak&quot;: &quot;...&quot;,
+      &quot;sk&quot;: &quot;...&quot;,
+      &quot;domain&quot;: &quot;...&quot;,
+      &quot;bucket&quot;: &quot;...&quot;
+    },
+    &quot;upyun&quot;: {
+      &quot;operator&quot;: &quot;...&quot;,
+      &quot;password&quot;: &quot;...&quot;,
+      &quot;bucket&quot;: &quot;...&quot;,
+      &quot;domain&quot;: &quot;...&quot;,
+      &quot;destDir&quot;: &quot;&quot;,  // 可以不填，默认就会上传到 bucket 的根目录下
+      &quot;endpoint&quot;: &quot;&quot;, // 可以不填，默认是 v0
+      &quot;apiVersion&quot;: &quot;&quot; // 可以不填，默认是 legacy
+    }
+  }
+}</code></pre></li>
+</ul>
 <h2>注意事项</h2><ul>
 <li><p>如果在 JS 或 JSON 中要引用某个文件，只要将它放在字符串中，保证带有至少一个路径（<code>/</code> 或 <code>\</code>），并且有后缀名，如 <code>.js</code></p>
 </li>
@@ -69,40 +144,8 @@ da(folder, globPatterns, options, function(err, fileMap) {
 <p>比如，如果你想排除所有图片文件用此命令：<code>da --excludes *.png</code>，但 <em>.png 会被 shell 解析成可能的 a.png b.png c.png，所以你的命令变成了：
 <code>da --excludes a.png b.png c.png</code> 并不是你想要的结果。因而，需要加上引号写成 `da --excludes '</em>.png'`</p>
 </li>
-<li><p>更新提醒</p>
-</li>
 </ul>
-<p>v0.3.3 及其之前的版本，配置信息是放在 <code>uploaderOptions</code> 选项中的，为了实现支持多个 uploader 随意切换，现在将所有的 uploaders 配置放在 <code>uploaders</code> 中。（对于老版本的配置还是兼容的，但如果使用了新版本的配置就不会使用老版本的）</p>
-<p>如：以前的配置可以是：</p>
-<pre class="prettyprint source"><code>{
-  uploader: 'qiniu',
-  uploaderOptions: {
-    ak: '...',
-    sk: '...',
-    bucket: '...',
-    domain: '...'
-  }
-}</code></pre><p>现在的配置是：</p>
-<pre class="prettyprint source"><code>{
-  uploader: 'qiniu_1',    // 默认的 uploader
-  uploaders: {          // 这里放的是所有支持的 uploader 的默认配置
-    qiniu_1: {
-      ak: '...',
-      sk: '...',
-      bucket: '...',
-      domain: '...',
-      alias: 'qiniu'  // alias 是可选的配置，如果不存在 qiniu_1 的 uploader，就一定要配置这个 alias，指到一个真实存在的 uploader
-    },
-    ftp: {
-      host: '....'
-      user: '...',
-      pass: '...',
-      port: 21,
-      baseUrl: '...',
-      destDir: '...'
-    }
-  }
-}</code></pre><h2>调试</h2><p>使用的是 <a href="https://github.com/isaacs/npmlog">npmlog</a>，支持 6 种不同的日志级别，
+<h2>调试</h2><p>使用的是 <a href="https://github.com/isaacs/npmlog">npmlog</a>，支持 6 种不同的日志级别，
 分别是： <code>silly</code>， <code>verbose</code>， <code>info</code>， <code>warn</code>， <code>error</code>， <code>silent</code>，越后面的
 输出的日志信息就越少。</p>
 <p>可以通过以下两种方式来设置日志级别：</p>
@@ -132,7 +175,7 @@ da(folder, globPatterns, options, function(err, fileMap) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Tue Sep 08 2015 22:49:52 GMT+0800 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Sat Sep 19 2015 14:37:19 GMT+0800 (CST)
 </footer>
 
 <script> prettyPrint(); </script>
