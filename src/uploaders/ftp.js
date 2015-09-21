@@ -7,7 +7,7 @@
  */
 
 var FTP = require('jsftp-mkdirp')(require('jsftp'));
-var path = require('path');
+var path = require('x-path');
 var log = require('npmlog');
 var async = require('async');
 var _ = require('lodash');
@@ -49,6 +49,7 @@ function FtpUploader(opts) {
   self.ftp = new FTP({host: self.host, user: self.user, pass: self.pass, port: self.port});
 
   self.baseUrl = self.normalizeBaseUrl(opts.baseUrl);
+  self.destDir = path.normalizePathSeparate(self.destDir);
   if (appendDestDirToBaseUrl) self.baseUrl += self.destDir.replace(/^\/|\/$/g, '') + '/';
   self.enableBatchUpload = true;
   self.supportFlatAssets = true;
@@ -80,7 +81,8 @@ FtpUploader.prototype.cwdFtp = function (dir, cb) {
  * @borrows Uploader.setFileRemotePath
  */
 FtpUploader.prototype.setFileRemotePath = function(file) {
-  file.remote.path = this.baseUrl + path.join(file.remote.relative, file.remote.basename);
+  var dest = path.join(file.remote.relative, file.remote.basename);
+  file.remote.path = this.baseUrl + path.normalizePathSeparate(dest);
 };
 
 /**
@@ -99,7 +101,7 @@ FtpUploader.prototype.batchUploadFiles = function(files, cb) {
 
   var iterate = function (file, done) {
     var relative = file.remote.relative;
-    var remotePath = path.join(relative, file.remote.basename);
+    var remotePath = path.normalizePathSeparate(path.join(relative, file.remote.basename));
     var put = function () {
       self.ftp.put(file.content, remotePath, done);
     };

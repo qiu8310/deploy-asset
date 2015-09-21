@@ -188,6 +188,7 @@ function File(file, opts, rootDir) {
     newBasename = newBasename.join('.');
   }
 
+  relativeDir = path.normalizePathSeparate(relativeDir);
   this.remote = {
     basename: OPTS.prefix + newBasename,
     relative: OPTS.flat ? '' : relativeDir,

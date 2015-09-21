@@ -9,7 +9,7 @@
 var _ = require('lodash'),
   log = require('npmlog'),
   mime = require('mime'),
-  path = require('path'),
+  path = require('x-path'),
   Upyun = require('upyun');
 
 var Uploader = require('../uploader');
@@ -84,7 +84,7 @@ function UpyunUploader(opts) {
 
 
 UpyunUploader.prototype.getDestFile = function(file) {
-  return path.join(this.destDir, file.remote.relative, file.remote.basename);
+  return path.normalizePathSeparate(path.join(this.destDir, file.remote.relative, file.remote.basename));
 };
 
 /**
