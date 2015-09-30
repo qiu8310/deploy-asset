@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link href="res/a.css">
+  <link href="res/b.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: url("res/a.png");
+    }
+  </style>
+  <script lang="zh" ng-hidden="{{fake}}" src="res/a.js"></script>
+  <script data-main="res/b"></script>
+  <script data-main="res/c.js"></script>
+  <script>console.log('xxx')</script>
+</head>
+<body>
+
+<img title="abc" src="res/b.png">
+<a download href="res/c.css"></a>
+<a href="res/c.png" target="_blank"></a>
+
+</body>
+</html>

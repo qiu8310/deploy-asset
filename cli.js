@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-'use strict';
 
 var _ = require('lodash');
 var os = require('os');
@@ -11,8 +10,8 @@ var program = require('commander');
 program
   .version(require(require('path').join(__dirname, 'package.json')).version)
   .usage('[options] <directory> <globPatterns>')
-  .description('Deploy the directory\'s static files to supported server (support qiniu/ftp/upyun for now).' +
-    '\r\n  More detail about options on: https://qiu8310.github.io/deploy-asset/global.html#da')
+  .description('Deploy the directory\'s static files to supported server (support qiniu/ftp/upyun for now).'
+    + '\r\n  More detail about options on: https://qiu8310.github.io/deploy-asset/global.html#da')
 
   .option('-i, --includes <globPatterns>', 'include files, support glob pattern')
   .option('--excludes <excludes>', 'excludes files, support glob pattern')
@@ -24,7 +23,7 @@ program
   .option('-d, --deep <deep>', 'set directory\'s deep, default is 0', parseInt)
   .option('--limit <eachUploadLimit>', 'the max concurrent upload files number', parseInt)
   .option('--hash <rename>', 'how many hash chars append to file basename: -1 => no-hash, 0 => all-hash', parseInt)
-  
+
   .option('-p, --prefix <prefix>', 'prepend a string to file basename')
   .option('-s, --suffix <suffix>', 'append a string to file basename')
   .option('-o, --out-dir <outDir>', 'output all uploaded file in local directory')
@@ -34,7 +33,8 @@ program
   .option('--map-remote-path <newFilePath>', 'output remote file paths to a json file')
 
   .option('--flat', 'flat assets, qiniu uploader do not support this')
-  .option('--dest-dir <destDir>', 'remote dest dir your want put your assets files to, qiniu uploader do not support this')
+  .option('--dest-dir <destDir>',
+    'remote dest dir your want put your assets files to, qiniu uploader do not support this')
 
   .option('--force', 'disable throws error when assets not exist while they should exist')
   .option('--dry', 'don\'t upload, just output the result')
@@ -55,21 +55,22 @@ program
 
 
 var opts = {};
-var map = { unbroken: 'unbrokenFiles', unupload: 'unuploadFiles', limit: 'eachUploadLimit', hash: 'rename', absolute: 'useAbsoluteRefFiles' };
+var map = { unbroken: 'unbrokenFiles', unupload: 'unuploadFiles',
+  limit: 'eachUploadLimit', hash: 'rename', absolute: 'useAbsoluteRefFiles' };
 
 if (program.configFile) { _.assign(opts, require(program.configFile)); }
 
 if (/(?:^|,)da(?:\:(\*|\w+))/.test(process.env.DEBUG)) { opts.logLevel = RegExp.$1 !== '*' && RegExp.$1 || 'verbose'; }
 
-('deep,includes,excludes,unbroken,unupload,absolute,force,dry,uploader,limit,htmlExts' +
-'jsExts,cssExts,jsonExts,hash,outDir,flat,destDir,prefix,suffix,logLevel').split(',').forEach(function(key) {
+('deep,includes,excludes,unbroken,unupload,absolute,force,dry,uploader,limit,htmlExts'
+  + 'jsExts,cssExts,jsonExts,hash,outDir,flat,destDir,prefix,suffix,logLevel').split(',').forEach(function (key) {
     if ((key in program) && program[key] === program[key]) {
       opts[map[key] || key] = program[key];
     }
   }
 );
 
-['verbose', 'silent', 'info'].forEach(function(key) { if (key in program) { opts.logLevel = key; } });
+['verbose', 'silent', 'info'].forEach(function (key) { if (key in program) { opts.logLevel = key; } });
 if (!_.isString(opts.outDir)) { opts.outDir = false; }
 
 
@@ -89,18 +90,18 @@ function write(filePath, data) {
   console.log('Write to ' + path.resolve(filePath) + ' ok!\r\n');
 }
 
-require('./')(dir, globPatterns, opts, function(err, all) {
+require('./')(dir, globPatterns, opts, function (err, all) {
   if (err) {
     console.error(err.stack || err);
   } else {
     if (_.size(all)) {
-      var max  = _.max(all, function(f) { return f.path.length; }).path.length;
+      var max = _.max(all, function (f) { return f.path.length; }).path.length;
       var fill = function (str) {
         return (new Array(max - str.length + 2)).join(' ') + str;
       };
       console.log(os.EOL);
       var outMap = {}, logMap = {};
-      _.each(all, function(f) {
+      _.each(all, function (f) {
         var remote = f.uploaded ? f.remote.path : '(Not uploaded)';
         outMap[f.path] = remote;
         logMap[path.resolve(f.path)] = remote;
@@ -115,7 +116,7 @@ require('./')(dir, globPatterns, opts, function(err, all) {
         var s = ['FullYear', 'Month', 'Date', 'Hours', 'Minutes', 'Seconds'].map(function (k) {
           var v = d['get' + k]();
           if (k === 'Month') v += 1;
-          v = new String(v);
+          v = v.toString();
           if (v.length < 2) v = '0' + v;
           return v;
         });

@@ -14,6 +14,23 @@
 
 [JSDOC Generated Document](http://qiu8310.github.io/deploy-asset)
 
+## TODO
+
+- [ ] update-notifier - Update notifications for your CLI app.
+- [ ] cli-table - Pretty unicode tables.
+- [ ] !!!!代码压缩
+- [ ] 只有设定了 hash 才能触发去检查循环依赖，添加一个选项，让其可以触发循环依赖
+
+- [x] 添加参数 renamePatterns & noRenamePatterns
+- [ ] 如果一个文件引用它本身会是什么情况
+- [x] 添加参数 runToStep，指定要执行到的步骤，总共有 init、inspect、replace、upload
+- [x] rename 支持 function
+- [ ] uploader 可以指定在上传完后才生成远程链接，这样就强制 concurrency 为 1 了
+- [x] uploader 可以指定 remoteRootDir 是否要加 '/' 前缀
+
+dry 时不要用 mockUploader，还是用原来的 uploader，只是在 它执行上传动作时做些手脚
+
+'destDir', 'baseUrl', 'appendDestDirToBaseUrl'
 
 ## 安装
 

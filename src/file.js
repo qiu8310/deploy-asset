@@ -6,489 +6,560 @@
  * Licensed under the MIT license.
  */
 
-var path = require('x-path'),
-  fs = require('fs'),
-  crypto = require('crypto');
+import ylog from 'ylog';
+import path from 'x-path';
+import mime from 'mime';
+import slash from 'slash';
+import crypto from 'crypto';
+import _ from 'lodash';
+import alter from 'alter';
+import fs from 'fs-extra';
 
-var _ = require('lodash'),
-  log = require('npmlog'),
-  async = require('async'),
-  alter = require('alter'),
-  rm = require('rimraf').sync,
-  mkdirp = require('mkdirp').sync;
-
-var patterns = require('./patterns'),
-  Uploader = require('./uploader');
-
-/**
- * 所有的文件类型
- *
- * 包括 `HTML`, `JS`, `CSS`, `JSON`, `STATIC` 五大类
- *
- * @memberof File
- * @type {Object}
- */
-var TYPE = {
-  HTML: 'html',
-  JS: 'js',
-  CSS: 'css',
-  JSON: 'json',
-  STATIC: 'static'
-};
+import FileType from './FileType';
+import AllPatterns from './patterns';
+import util from './util';
 
 /**
- * 所有文件的 hash，hash 的 key 是文件路径， value 是 {@link File} 对象
- * @private
- * @type {Object}
+ * @typedef {Object} Asset
+ * @prop {Number} start
+ * @prop {Number} end
+ * @prop {String} raw - 引用处
+ * @prop {String} src - 被替换的字符串
+ * @prop {String} target - 替换成的字符串
+ * @prop {String} filePath
+ * @prop {Pattern} pattern
  */
-var MAP = {};
-var typeValues = _.values(TYPE);
-var OPTS = null;
+
+export default class File {
+
+  /**
+   * File 构造函数
+   *
+   * @param {String} filePath - 文件的路径
+   * @param {String} rootDir - 此文件的根目录
+   * @param {DAOpts} [opts = {}] - 配置项
+   * @param {Asset} [asset = {}] - 传了此值，表示此文件是从别的文件中找到的
+   *
+   * @throws ENOENT 文件不存在时，会抛出异常
+   */
+  constructor(filePath, rootDir, opts = {}, asset = {}) {
+
+    filePath = path.resolve(filePath);
+    rootDir = path.resolve(rootDir);
+
+    let relativePath = path.relative(rootDir, filePath);
 
 
-/**
- * 获取远程的 basename
- *
- * @param {String} oldBasename
- * @param {String} path
- * @param {Buffer} content
- * @returns {String}
- * @private
- */
-function _reBasename(oldBasename, path, content) {
-  if (_.isFunction(OPTS.rename)) {
-    var rtn = OPTS.rename(oldBasename, path, content);
-    if (_.isString(rtn)) {
-      return rtn;
+    /**
+     * 配置项
+     * @type {DAOpts}
+     */
+    this.opts = opts;
+
+    /**
+     * 当前文件的绝对路径
+     * @type {String}
+     */
+    this.filePath = filePath;
+    /**
+     * @alias File#filePath 主要是为了给 dep.js 用的
+     */
+    this.value = filePath;
+    /**
+     * @type {Array} 主要是为了给 dep.js 用的
+     */
+    this.depends = [];
+    /**
+     * @type {Array} 主要是为了给 dep.js 用的
+     */
+    this.deepDepends = null;
+
+    /**
+     * 当前文件的根目录
+     * @type {String}
+     */
+    this.rootDir = rootDir;
+
+    /**
+     * 此文件相对根目录的路径
+     * @type {String}
+     */
+    this.relativePath = relativePath;
+
+    /**
+     * 当前文件的 Buffer 内容
+     * @type {Buffer}
+     */
+    this.content = fs.readFileSync(filePath);
+
+    /**
+     * 当前文件的 mime 文件类型
+     * @type {String}
+     */
+    this.mimeType = mime.lookup(filePath);
+
+    /**
+     * 当前文件目录
+     * @type {String}
+     */
+    this.dirname = path.dirname(filePath);
+
+    /**
+     * 当前文件名称
+     * @type {String}
+     */
+    this.basename = path.basename(filePath);
+
+    /**
+     * 此文件的目录相对根目录的路径
+     * @NOTE 不能使用 path.dirname(relativePath)，这样的话会出现值为 "." 的情况
+     * @type {String}
+     */
+    this.relativeDir = path.relative(rootDir, this.dirname);
+
+    /**
+     * 当前文件后缀名，包含 '.'
+     * @type {String}
+     */
+    this.extname = path.extname(filePath);
+
+    /**
+     * 当前文件的后缀名，不包含 '.'
+     * @type {String}
+     */
+    this.ext = this.extname.substr(1);
+
+    /**
+     * 文件的名称，不包括后缀
+     * @type {string}
+     */
+    this.name = this.basename.slice(0, - this.extname.length);
+
+    /**
+     * 文件类型
+     * @type {String}
+     */
+    this.type = asset.type && asset.type !== 'unknown' ? asset.type : util.getFileType(filePath, opts);
+
+    /**
+     * 根据黑名单，白名单得到的一些配置项
+     * @type {{inspect: boolean, upload: boolean, replace: boolean, rename: boolean, absolute: boolean}}
+     */
+    this.apply = {
+      inspect: true,  // 是否要执行 inspectAssets
+      upload: true,   // 是否要上传文件
+      replace: true,  // 是否要替换里面的静态资源
+      rename: true,   // 是否重命名
+      absolute: true // 执行 replace 时，是否使用绝对路径来替换；只有在 replace 为 true 时才有效
+    };
+
+    _.each(this.apply, (val, key) => {
+      let whiteList = opts[key + 'Patterns'];
+      let blackList = opts['no' + _.capitalize(key) + 'Patterns'];
+      this.apply[key] = util.applyWhiteAndBlackList([relativePath], whiteList, blackList).length;
+    });
+
+    /**
+     * 所有引用了此文件的 Files
+     * @type {Array<File>}
+     */
+    this.callers = [];
+
+    /**
+     * 所有此文件中包含的静态资源
+     * @type {Array<Asset>}
+     */
+    this.assets = [];
+
+    /**
+     * 上传相关的状态
+     * @type {{exists: null, conflict: null, uploaded: null, success: boolean}}
+     */
+    this.status = {
+      exists: null, // 是否远程文件已经存在了
+      conflict: null, // 是否和远程文件不一致
+      uploaded: null, // 是否上传到远程了
+      success: false // 是否远程文件生效了，上传成功，或没上传，但远程文件和本地文件一样，此值都为 true
+    };
+    /**
+     * 远程文件相关的信息
+     * @type {{basename: string, content: buffer, relative: string, url: string}}
+     */
+    this.remote = {
+      basename: null,
+      content: this.content,
+      relative: opts.flat ? '' : this.relativeDir,
+      url: null
+    };
+
+    /**
+     * @alias File#filePath
+     * @deprecated 以后可能被废弃，请使用 File#filePath 替代
+     */
+    this.path = filePath;
+
+    // 添加到引用中
+    File.refs[filePath] = this;
+  }
+
+  /**
+   * 根据文件路径，找到对应的文件
+   * @param {String} filePath
+   * @returns {File|Undefined}
+   */
+  static findFileInRefs(filePath) {
+    return File.refs[path.resolve(filePath)];
+  }
+
+  /**
+   * @returns {string} 当前文件内容的字符串
+   */
+  get contentString() { return this.content.toString(); }
+  /**
+   * @returns {string} 将要上传到服务器上的文件内容的字符串
+   */
+  get remoteContentString() { return this.remote.content.toString(); }
+
+  /**
+   * 根据配置，得到远程文件的 basename
+   */
+  updateRemoteBasename() {
+    if (this.remote.basename) return this.remote.basename;
+    if (!this.apply.rename) {
+      this.remote.basename = this.basename;
+      return this.basename;
+    }
+
+    let opts = this.opts;
+    let hash = parseInt(opts.hash, 10);
+    if (hash && hash > 0) {
+      let md5 = crypto.createHash('md5');
+      let hashPrefix = 'hashPrefix' in opts ? opts.hashPrefix : opts.DEFAULTS.HASH_PREFIX;
+      md5.update(opts.hashSource === 'remote' ? this.remoteContentString : this.contentString);
+      hash = hashPrefix + md5.digest('hex').substr(0, hash);
     } else {
-      log.warn('Specified rename function did not return string, ignore it.');
-    }
-  }
-
-  var len = _.isNumber(OPTS.rename) ? OPTS.rename : 8;
-
-  if (len === -1) { return oldBasename; }
-
-  var hash, md5 = crypto.createHash('md5');
-  md5.update(content.toString());
-  hash = md5.digest('hex');
-
-  if (len === 0) {
-    var ext = oldBasename.split('.').pop().slice(-10); // 最长 10 位
-    return hash + '.' + ext;
-  }
-
-  return oldBasename.replace(/(\.\w*)$/, '-' + hash.substr(0, len) + '$1');
-}
-
-/**
- * 根据后缀名来判断文件的类型
- * @param {String} filepath
- * @returns {String}
- * @private
- */
-function _detectFileType(filepath) {
-  return _.find(typeValues, function(k) {
-    return OPTS[k + 'Exts'] && OPTS[k + 'Exts'].indexOf(path.extname(filepath).substr(1)) >= 0;
-  }) || TYPE.STATIC;
-}
-
-/**
- * 自定义的文件节点
- *
- * @param {String} file - 文件路径
- * @param {Object} opts
- * @param {File.TYPE} [opts.type = File.TYPE.STATIC] - 指定文件的类型
- * @param {String} rootDir - 此文件的根目录，用于计算原程目录
- * @class
- */
-function File(file, opts, rootDir) {
-
-  var relativeDir = path.relative(rootDir, path.dirname(file));
-
-  /**
-   * 所有引用了此文件的 Files
-   * @type {Array}
-   */
-  this.callers = [];
-
-  /**
-   * 所有此文件包含的资源
-   *
-   * @example
-   * {start: 34, end 60, filepath: ...}
-   *
-   * @type {Array}
-   */
-  this.assets = [];
-
-  /**
-   * 当前文件的路径
-   * @type {String}
-   */
-  this.path = file;
-
-  /**
-   * 当前文件的相对目录
-   * @type {String}
-   */
-  this.dirname = path.dirname(file);
-
-  /**
-   * 此文件的根目录，用于计算相对目录
-   * @type {String}
-   */
-  this.rootDir = rootDir;
-
-  /**
-   * 此文件的相对目录，原程目录可以参考
-   * @type {String}
-   */
-  this.relativeDir = relativeDir;
-
-  /**
-   * 当前文件的内容
-   * @type {Buffer}
-   */
-  this.content = fs.readFileSync(file);
-
-  /**
-   * 当前文件的 basename
-   * @type {String}
-   */
-  this.basename = path.basename(file);
-
-  /**
-   * 当前文件的 extension，不包含 '.'
-   * @type {String}
-   */
-  this.ext = path.extname(file).substr(1);
-
-  /**
-   * 当前文件的类型
-   * @type {String}
-   */
-  this.type = opts.type || _detectFileType(file);
-
-
-  /**
-   * 标识文件是否被上传了
-   * @type {Boolean}
-   */
-  this.uploaded = false;
-
-  /**
-   * 远程服务器上的文件信息
-   * @type {Object}
-   */
-  var newBasename = _reBasename(this.basename, this.path, this.content);
-  if (OPTS.suffix) {
-    newBasename = newBasename.split('.');
-    newBasename[newBasename.length > 1 ? newBasename.length - 2 : 0] += OPTS.suffix;
-    newBasename = newBasename.join('.');
-  }
-
-  relativeDir = path.normalizePathSeparate(relativeDir);
-  this.remote = {
-    basename: OPTS.prefix + newBasename,
-    relative: OPTS.flat ? '' : relativeDir,
-    path: null
-  };
-}
-
-
-/**
- * 解析单个 pattern，得到文件中的资源
- * @param {Object} pattern - {@link patterns} item
- * @param {Array} relativeDirs
- * @returns {Array}
- * @private
- */
-File.prototype._getAssetsFromPattern = function(pattern, relativeDirs) {
-  var file = this;
-  log.silly('\tpattern desc', pattern.msg);
-
-  var all = [];
-  file.content.toString().replace(pattern.re, function(raw, src, index) {
-    // 如果是以 \w+: 或 // 开头的文件 ，则忽略，如 http://xxx.com/jq.js, //xxx.com/jq.js, javascript:;
-    if (/^(?:\w+:|\/\/)/.test(src)) { return raw; }
-
-    // 去掉 src 中的 ? 及 # 之后的字符串
-    src = src.replace(/[\?|#].*$/, '').trim();
-
-    if (!src) { return raw; }
-
-    // 如果是绝对路径，需要把当前路径放到相对路径中去
-    if (src[0] === '/' && relativeDirs.indexOf('.') < 0) { relativeDirs.unshift('.'); }
-
-    // 用指定的函数过滤下
-    var start = index + raw.indexOf(src);
-    var end = start + src.length;
-    if (_.isFunction(pattern.inFilter)) { src = pattern.inFilter(src); }
-
-    var filepath = _.find(relativeDirs, function(dir) {return path.isFileSync(path.join(dir, src)); });
-
-    // 文件需要存在 但并不存在 时
-    if (pattern.exists && !filepath) {
-      var logType = OPTS.force ? 'warn' : 'error';
-      if (/\{.*\}|<.*>/.test(src)) {
-        log[logType]('template string can\'t resolve to local file', '%s in %s at', src, file.path, start);
-      } else {
-        log[logType]('file not exists', '%s in %s at %d', src, file.path, start);
-      }
-      if (!OPTS.force) {
-        log.error('Use force option to proceed');
-        throw new Error('File ' + src + ' not exists');
-      }
+      hash = '';
     }
 
-    if (filepath) {
-      filepath = path.join(filepath, src);
-      log.silly('\t found asset', start + ' ' + filepath);
-      var asset = {
-        type: pattern.type !== 'unknown' && pattern.type || _detectFileType(filepath),
-        relative: pattern.relative,
-        start: start,
-        end: end,
-        filepath: filepath
-      };
-      if (_.isFunction(pattern.outFilter)) { asset.outFilter = pattern.outFilter; }
-      all.push(asset);
-    }
-
-    return raw;
-  });
-
-  return all;
-};
-
-/**
- * 查找当前文件所引用的其它资源
- * @returns {Array}
- */
-File.prototype.findAssets = function() {
-  var pts = patterns[this.type] || [];
-
-  if (!pts.length) { return []; }
-
-  var file = this;
-
-  // 如果是 JS 或 JSON 文件，则相对路径是调用它文件的目录，CSS 和 HTML 文件中的资源都是相对于此文件本身的
-  var relativeDirs = [file.dirname];
-  if (_.contains([TYPE.JSON, TYPE.JS], file.type) && file.callers.length) {
-    file.callers.forEach(function(f) { relativeDirs.unshift(f.dirname); });
-  }
-
-  log.verbose('Finding assets in ' + file.type + ' file', file.path + ' ...');
-
-  var result = pts.reduce(function(all, pattern) {
-
-    return all.concat(file._getAssetsFromPattern(pattern, relativeDirs));
-
-  }, []);
-
-  log.verbose(' found assets', _.map(result, function(it) { return [it.start, it.filepath];}));
-  return result;
-};
-
-/**
- * 添加 file 到 {@link File#callers}
- * @param {File} file
- * @returns {Boolean}
- */
-File.prototype.addCaller = function(file) {
-  return _.contains(this.callers, file) ? false : this.callers.push(file);
-};
-
-/**
- * 添加 asset 到 {@link File#assets}
- * @param {Object}  asset
- * @param {File.TYPE} asset.type
- * @param {Integer}   asset.start
- * @param {Integer}   asset.end
- * @param {String}    asset.filepath
- * @param {Boolean}   asset.relative
- * @param {Function}  asset.outFilter - Come from {@link patterns} item's outFilter
- */
-File.prototype.addAsset = function(asset) {
-  this.assets.push(asset);
-};
-
-
-/**
- * 调用 uploader 上传所有文件
- * @param {Uploader} uploader
- * @param {Object} opts
- * @param {Function} cb
- * @private
- */
-function _upload(uploader, opts, cb) {
-
-  var ignores = (OPTS.inspectOnly || []).concat(OPTS.unuploadFiles);
-
-  var files = _.filter(_.values(MAP), function(file) { return !_.includes(ignores, file.path); });
-
-  if (files.length === 0) {
-    log.warn('Your files are ignored', ignores);
-    log.warn('No files need to upload');
-    // ftp 可能已经连接了，所以这里不能退出，否则 ftp 无法关闭连接
-  } else {
-    _.each(files, function (file) { file.uploaded = true; });
-    log.info('You have ' + files.length + ' files need upload, the max concurrent number is ' + opts.eachUploadLimit);
-  }
-
-  if (uploader.enableBatchUpload) {
-    uploader.batchUploadFiles(files, cb);
-  } else {
-    async.eachLimit(files, opts.eachUploadLimit, function (file, next) {
-      log.info('Start uploading ...', file.path);
-      uploader.uploadFile(file, function(err) {
-        if (err) {
-          err.file = file.path;
-        } else {
-          log.info('  end uploaded', file.path);
-        }
-        next(err);
+    let map = {
+      name: this.name,
+      prefix: opts.prefix || '',
+      suffix: opts.suffix || '',
+      hash
+    };
+    let keys = Object.keys(map);
+    let rename = opts.rename || opts.DEFAULTS.RENAME;
+    let name;
+    if (typeof rename === 'function') {
+      name = rename(this, map);
+    } else {
+      name = rename.replace(/\{(\w+)\}/g, (raw, k) => {
+        k = _.find(keys, key => key.indexOf(k) === 0);
+        return k ? map[k] : raw;
       });
-    }, cb);
-  }
-}
-
-/**
- * for File.inspect
- *
- * @param {Array} files
- * @param {File} caller
- * @private
- */
-function _inspect (files, caller) {
-  files.forEach(function(f) {
-    var opts = {};
-
-    // f 可能是 asset
-    if (f.filepath) {
-      opts.type = f.type;
-      f = f.filepath;
     }
 
-    if (!MAP[f]) {
-      var file = new File(f, opts, OPTS.dir);
-      MAP[f] = file;
+    this.remote.basename = name + this.extname;
+    return this.remote.basename;
+  }
 
-      if (caller) { file.addCaller(caller); }
+  /**
+   * 更新远程文件的链接
+   * 依赖于 updateRemoteBaseName，及 opts.env
+   */
+  updateRemoteUrl() {
+    let remote = this.remote;
+    if (remote.url) return remote.url;
+    remote.url = this.opts.env.getFileRemoteUrl(this);
+    return remote.url;
+  }
 
-      if (!_.includes(OPTS.unbrokenFiles, file.path)) {
-        var assets = file.findAssets();
+  /**
+   * 同时更新 remote.basename 和 remote.url
+   */
+  updateRemote() {
+    this.updateRemoteBasename();
+    this.updateRemoteUrl();
+  }
 
-        assets.forEach(file.addAsset.bind(file));
+  /**
+   * 添加调用此文件的父文件
+   * @param {File} file
+   */
+  addCaller(file) {
+    if (this.callers.indexOf(file) < 0) this.callers.push(file);
+  }
 
-        _inspect(assets, file);
+  /**
+   * 遍历此文件内容，找到此文件所包含的其它静态资源文件
+   *
+   * @param {Function} [filter]
+   * @NOTE inspect 被 node 的 console 使用了，所以起了此名字
+   */
+  insp(filter) {
+    let patterns = AllPatterns[this.type];
+    let assets = [];
+
+    if (!this.apply.inspect) ylog.verbose('*此文件指定为忽略检查*');
+    else if (this.type === File.STATIC_TYPE) ylog.verbose('*此文件类型不支持检查*');
+    else if (!patterns || !patterns.length) ylog.verbose('*此文件类型没有对应的匹配规则*');
+    else {
+      let relativeDirs = [this.dirname];
+      // 如果是 JS 或 JSON 文件，则相对路径是调用它文件的目录，CSS 和 HTML 文件中的资源都是相对于此文件本身的
+      if ([File.JSON_TYPE, File.JS_TYPE].indexOf(this.type) >= 0)
+        this.callers.forEach(file => {
+          if (relativeDirs.indexOf(file.dirname) < 0) relativeDirs.push(file.dirname);
+        });
+
+      assets = patterns.reduce((all, pattern) => {
+        return all.concat(this._inspectAssetsUsePattern(pattern, relativeDirs));
+      }, []);
+
+      if (typeof filter === 'function') {
+        ylog.info('执行 ~inspectCallback~ ...');
+        assets = filter(this, assets);
       }
     }
-  });
-}
 
-
-var _rHost = /^((?:\w+:)?\/\/[^\/]+)/;
-/**
- * 得到相对 url 路径
- * @param {String} ref
- * @param {String} target
- * @returns {String}
- * @private
- */
-function _getRelativePath(ref, target) {
-  // 首先两个地址的域名要相同
-  var host;
-  _rHost.test(ref);
-  host = RegExp.$1;
-  _rHost.test(target);
-  if (host && host === RegExp.$1) {
-    return path.relative(path.dirname(ref.substr(host.length)), target.substr(host.length));
+    this.assets = assets;
+    return assets;
   }
 
-  return target;
-}
+  _inspectAssetsUsePattern(pattern, relativeDirs) {
+    let result = [];
+    ylog.silly(pattern.msg + '： **%s**', pattern.re);
+    this.contentString.replace(pattern.re, (raw, src, index) => {
 
-/**
- * 更新文件的引用
- *
- * @private
- */
-function _update () {
-  if (OPTS.outDir) {
-    mkdirp(OPTS.outDir);
-    rm(OPTS.outDir);
-    log.info('Empty out dir', OPTS.outDir);
+      ylog.silly(' 找到 *%s*', src);
+
+      // 如果是以 \w+: 或 // 开头的文件 ，则忽略，如 http://xxx.com/jq.js, //xxx.com/jq.js, javascript:;
+      if (/^(?:\w+:|\/\/)/.test(src)) return raw;
+
+      // 去掉 src 中的 ? 及 # 之后的字符串
+      src = src.replace(/[\?|#].*$/, '').trim();
+
+      // 如果剩下的是个空字符串，当然也去掉
+      if (!src) return raw;
+
+      // 如果是绝对路径，需要把当前路径放到相对路径中去
+      if (src[0] === '/' && relativeDirs.indexOf(this.rootDir) < 0)
+        relativeDirs.unshift(this.rootDir);
+
+      // 用指定的函数过滤下
+      let start = index + raw.indexOf(src);
+      let end = start + src.length;
+      let assetPath;
+
+      let assetRelative = pattern.inFilter ? pattern.inFilter(src) : src;
+
+      // 从 relativeDirs 中查找 assetPath
+      relativeDirs.some(dir => {
+        let tmpFilePath = path.join(dir, assetRelative);
+        if (path.isFileSync(tmpFilePath)) {
+          assetPath = tmpFilePath;
+          return true;
+        }
+      });
+
+      if (pattern.exists && !assetPath) {
+        let force = this.opts.ignoreNoneAssetError;
+        let level = force ? 'warn' : 'error';
+        ylog[level]('文件 ^%s^ 中的静态资源 ~%s~ 无法定位到', this.relativePath, assetRelative);
+
+        if (!force) {
+          ylog[level]('可以启用 ~ignoreNoneAssetError~ 来忽略此错误');
+          throw new Error('NONE_ASSET');
+        }
+      }
+
+      if (assetPath) {
+        assetPath = path.relative(this.rootDir, assetPath);
+        ylog.silly('  => *%s*', assetPath);
+        let asset = {pattern, start, end, raw, src, target: null, filePath: path.resolve(assetPath)};
+        result.push(asset);
+      }
+    });
+
+    return result;
   }
 
-  _.each(MAP, function(file) {
-    if (file.assets.length) {
-      var useRelativeAssetPath = !_.includes(OPTS.useAbsoluteRefFiles, file.path);
-      file.content = new Buffer(alter(file.content.toString(), file.assets.map(function(asset) {
-        var str = MAP[asset.filepath].remote.path;
-        if (asset.outFilter) { str = asset.outFilter(str); }
+  /**
+   * 执行静态资源替换
+   *
+   * @NOTE 文件所依赖的 assets 需要先获取它们的 remote.url 和 remote.basename
+   */
+  replace() {
+    let result = [];
+    if (!this.apply.replace) ylog.verbose('*此文件指定为忽略替换*');
+    else if (this.type === File.STATIC_TYPE) ylog.verbose('*此文件类型不支持替换*');
+    else if (!this.assets.length) ylog.verbose('*此文件没有依赖其它静态资源*');
+    else {
+      this.remote.content = new Buffer(alter(this.contentString, this.assets.map(asset => {
 
-        if (asset.relative && useRelativeAssetPath) {
-          str = _getRelativePath(file.remote.path, str);
+        let assetFilePath = asset.filePath;
+        let assetRemote = File.findFileInRefs(assetFilePath).remote;
+        let assetUrl;
+
+        // 这里需要依赖于 asset 的 url 和 basename
+        if (this.apply.absolute) {
+          assetUrl = assetRemote.url;
+        } else {
+          assetUrl = slash(path.relative(this.remote.relative, path.join(assetRemote.relative, assetRemote.basename)));
         }
 
-        return {start: asset.start, end: asset.end, str: str};
+        if (asset.pattern.outFilter)
+          assetUrl = asset.pattern.outFilter(assetUrl);
+
+        asset.target = assetUrl;
+        result.push(asset);
+        return {start: asset.start, end: asset.end, str: assetUrl};
       })));
     }
 
-    if (OPTS.outDir) {
-      var dir = path.join(OPTS.outDir, path.dirname(file.remote.path.replace(_rHost, '').substr(1))),
-        filepath = path.join(dir, file.remote.basename);
-      mkdirp(dir);
-      log.info('Write to file', filepath);
-      fs.writeFileSync(filepath, file.content, {encoding: null});
+    return result;
+  }
+
+  /**
+   * 上传文件
+   * @private
+   * @param {Function} done
+   */
+  upload(done) {
+    let fileStr = this.relativePath;
+    if (!this.apply.upload) {
+      ylog.info.title('忽略上传文件 ^%s^', fileStr);
+      done();
+    } else {
+      ylog.info.title('开始上传文件 ^%s^', fileStr);
+
+      let end = (err) => {
+        if (this.status.success)
+          ylog.info.writeOk('上传文件 ^%s^ => ^%s^ 成功', fileStr, this.remote.url);
+        done(err);
+      };
+
+      this._beforeUpload(err => {
+        if (err) return end(err);
+        this._upload(err => {
+          if (err) return end(err);
+          this._afterUpload(end);
+        });
+      });
     }
-  });
+  }
+
+  _judgeExists(uploader, error, success, isDiff) {
+    uploader.isRemoteFileExists(this, (err, exists) => {
+      if (err) return error(err);
+
+      this.status.exists = exists;
+
+      if (exists) {
+        if (isDiff) return success();
+
+        let ignore = this.opts.ignoreExistsError;
+        let level = ignore ? 'warn' : 'error';
+        ylog[level].writeError('文件 ^%s^ 上传失败，远程文件 ^%s^ 已经存在', this.relativePath, this.remote.url);
+
+        if (!ignore)
+          ylog[level]('你可以启用 ~ignoreExistsError~ 来忽略此错误，但不会继续上传文件')
+            .ln.log('  或者启用 ~overwrite~ 来强制覆盖远程文件')
+            .ln.log('  或者启用 ~diff~ 来和远程文件比对，如果一致则无需上传');
+
+        error(ignore ? null : new Error('REMOTE_FILE_EXISTS'));
+
+      } else {
+        if (isDiff) return error();
+
+        success();
+      }
+    });
+  }
+  _judgeConflict(uploader, error, success) {
+    uploader.getRemoteFileContent(this, (err, content) => {
+      if (err) return error(err);
+
+      this.status.conflict = this.content.compare(content) !== 0;
+
+      if (this.status.conflict) {
+        let ignore = this.opts.ignoreConflictError;
+        let level = ignore ? 'warn' : 'error';
+        ylog[level].writeError('文件 ^%s^ 上传失败，它和远程文件 ^%s^ 的内容不一致', this.relativePath, this.remote.url);
+
+        if (!ignore)
+          ylog[level]('你可以启用 ~ignoreConflictError~ 来忽略此错误，但不继续上传文件')
+            .ln.log('  或者关闭 ~diff~ 来忽略和远程文件的对比');
+
+        error(ignore ? null : new Error('REMOTE_FILE_CONFLICT'));
+
+      } else {
+        success();
+      }
+
+    });
+  }
+  _judgeUploaded(uploader, error, success) {
+    if (this.opts.dry) {
+      this.status.success = true;
+      return success();
+    }
+
+    uploader.uploadFile(this, err => {
+      this.status.uploaded = !err;
+      let ignore = this.opts.ignoreUploadError;
+      let level = ignore ? 'warn' : 'error';
+      if (err) {
+        ylog[level].writeError('上传文件 ^%s^ => ^%s^ 失败', this.relativePath, this.remote.url);
+        if (!ignore) ylog[level]('你可以启用 ~ignoreUploadError~ 来忽略此错误');
+
+        util.error(err, level, this.opts.stack);
+        error(ignore ? null : new Error('UPLOAD_ERROR'));
+      } else {
+        this.status.success = true;
+        success();
+      }
+    });
+  }
+
+  _upload(callback) {
+    let {uploader, ignoreUploadError, ignoreExistsError, ignoreDiffError, overwrite, diff} = this.opts;
+
+    if (!overwrite && !diff) {
+      this._judgeExists(uploader, callback, () => {
+        this._judgeUploaded(uploader, callback, callback);
+      });
+    } else if (overwrite) {
+      this._judgeUploaded(uploader, callback, callback);
+    } else if (diff) {
+      this._judgeExists(uploader, callback, () => {
+        this._judgeConflict(uploader, callback, () => {
+          this.status.success = true; // 文件一样，就不需要上传了
+          callback();
+        });
+      }, diff);
+    } else {
+      throw new Error('OVERWRITE_DIFF_CONFLICT');
+    }
+  }
+
+  _beforeUpload(callback) {
+    this.opts.uploader.beforeUploadFile(this, callback);
+  }
+  _afterUpload(callback) {
+    this.opts.uploader.afterUploadFile(this, callback);
+  }
 }
 
-/**
- * 分析文件并上传文件
- *
- * @param {Array} files - 所有需要分析的文件
- * @param {Object} daOpts - 从 {@link da} 传过来的配置项
- * @param {Function} cb - 文件上传后的回调函数
+/*
+ 一此常量，标识文件的类型
  */
-File.inspect = function(files, daOpts, cb) {
-  OPTS = daOpts;
-  MAP = {};
+File.STATIC_TYPE = FileType.STATIC.value;
+File.HTML_TYPE = FileType.HTML.value;
+File.JSON_TYPE = FileType.JSON.value;
+File.CSS_TYPE = FileType.CSS.value;
+File.JS_TYPE = FileType.JS.value;
 
-  try {
-    log.profiler('da', 'inspect start');
-    _inspect(files);
-    log.profiler('da', 'inspect end');
-
-    var uploader = Uploader.instance(daOpts.uploader, daOpts.uploaderOptions);
-
-    log.profiler('da', 'update local files start');
-    _.each(MAP, function(file) {
-      uploader.setFileRemotePath(file);
-      file.remote.basename = path.basename(file.remote.path);
-    });
-    _update();
-    log.profiler('da', 'update local files end');
-
-    if (!daOpts.dry) {
-      log.profiler('da', 'upload to remote start');
-
-      _upload(uploader, daOpts, function(err) {
-        log.profiler('da', 'upload to remote end');
-        cb(err, MAP);
-      });
-
-    } else {
-      cb(null, MAP);
-    }
-
-  } catch (err) { cb(err); }
-};
-
-
-File.TYPE = TYPE;
-
-module.exports = File;
+/*
+ 所有文件的引用都放在这里
+ */
+File.refs = {};

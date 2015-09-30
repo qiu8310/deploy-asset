@@ -1,0 +1,5 @@
+{
+  "a": "res/a.js",
+  "res/b.js": "b",
+  "c": "index.html"
+}
