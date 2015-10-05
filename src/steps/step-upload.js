@@ -12,20 +12,31 @@ export default function (files, opts, done) {
 
 
     let uploadingCount = 0;
+    let uploadError = false;
 
     let upload = (file, nextFile) => {
       uploadingCount++;
 
       file.upload(err => {
         uploadingCount--;
-        if (!uploadingCount) ylog.setLevel(opts.logLevel);
+        if (!uploadingCount) {
+          ylog.setLevel(opts.logLevel);
+          if (uploadError) {
+            done(uploadError, files);
+            uploadError = false;
+          }
+        }
         nextFile(err);
       });
     };
 
     let finish = (err) => {
-      if (err && uploadingCount) ylog.setLevel('silent');
-      done(err, files);
+      if (err && uploadingCount) {
+        uploadError = err;
+        ylog.setLevel('silent');
+      } else {
+        done(err, files);
+      }
     };
 
     uploader.run(end => async.eachLimit(files, opts.concurrence, upload, end), finish);

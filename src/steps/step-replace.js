@@ -80,15 +80,20 @@ export default function (files, opts, next) {
       }
     };
 
-    // 只有两种情况才需要对文件进行排序：
-    // 1. 需要根据远程文件内容来计算文件的 hash 值
-    // 2. 文件的链接是在上传完后才能知道，这样就需要先上传无依赖的文件，并且这种情况下有循环依赖时无法 ignore
-    if (opts.hash && opts.hash > 0 && opts.hashSource === 'remote' || retrieveRemoteUrlAfterUploaded) {
+    // 只有三种情况才需要对文件进行排序：
+    // 1. 指定了 dependsCheck
+    // 2. 需要根据远程文件内容来计算文件的 hash 值
+    // 3. 文件的链接是在上传完后才能知道，这样就需要先上传无依赖的文件，并且这种情况下有循环依赖时无法 ignore
+    if (opts.dependsCheck ||
+      opts.hash && opts.hash > 0 && opts.hashSource === 'remote' ||
+      retrieveRemoteUrlAfterUploaded) {
+
       dependsCheck();
       files.forEach(file => {
         file.deepDepends.forEach(resolve);
         resolve(file);
       });
+
     } else {
       files.forEach(file => file.updateRemote());
       files.forEach(replace);

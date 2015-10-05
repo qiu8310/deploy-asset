@@ -6,7 +6,7 @@ export default {
   },
   JS: {
     value: 'js',
-    extensions: ['js', 'jsx', 'es6'],
+    extensions: ['js'],
     inspectable: true
   },
   CSS: {

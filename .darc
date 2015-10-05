@@ -1,6 +1,5 @@
 {
-  "rename": 6,
-  "prefix": "",
-  "uploader": "qiniu",
-  "uploaderOptions": {}
+  "minConfig": {
+    "uglify-js": {}
+  }
 }

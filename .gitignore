@@ -8,6 +8,5 @@ docs/
 grunt-deploy-asset
 gulp-deploy-asset
 
-test/fixtures/*/public
 old_src
 old_test

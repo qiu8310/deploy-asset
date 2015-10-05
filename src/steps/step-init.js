@@ -80,19 +80,20 @@ export default function (any, opts, next) {
     _initUploader(opts, DEFAULTS);
 
     ylog.setLevel(opts.logLevel);
-    ylog.info.writeFlag(_filterOutOpts(opts), '选项').ln();
+    ylog.info('选项', _filterOutOpts(opts)).ln();
 
     if (opts.overwrite && opts.diff) return next(new Error('OVERWRITE_AND_DIFF_CONFLICT'));
 
     // 遍历当前文件夹，找到所有文件
-    let filePaths = _parseDaAnyArgument(any);
+    let filePaths = _parseDaAnyArgument(!any || !any.length ? opts.rootDir : any);
     if (filePaths.length === 0) return next(new Error('NO_FILES'));
 
     // 获取根目录
-    let rootDir = opts.rootDir && path.resolve(opts.rootDir);
+    let rootDir = opts.rootDir;
     if (!rootDir)
       rootDir = typeof any === 'string' && path.isDirectorySync(any) ? any : util.getFilesCommonDirectory(filePaths);
 
+    rootDir = path.resolve(rootDir);
     opts.rootDir = rootDir; // 保证 rootDir 是绝对路径
 
     // 将文件转化成相对 rootDir 的路径

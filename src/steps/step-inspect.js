@@ -26,18 +26,12 @@ export default function (filePaths, opts, next) {
 
       let assets = file.insp(opts.inspectFilter);
 
-      let assetFiles = assets.map(asset => {
-        let assetFile = getFile(asset.filePath, asset);
-        assetFile.addCaller(file);
-        return assetFile;
-      });
-
       assets.forEach(a => {
         ylog.verbose(`   资源 &%s-%s& : &%s&  *引用处: %s*`, a.start, a.end, a.src, a.raw);
       });
       ylog.info.writeOk('共找到 ^%s^ 处静态资源', assets.length).ln();
 
-      return assetFiles;
+      return file.resolveAssets();
     };
 
     let walk = (files) => {
@@ -51,7 +45,7 @@ export default function (filePaths, opts, next) {
 
     ylog.verbose('检查后的文件 *%o*', inspectedFiles.map(file => file.relativePath));
 
-    outputFileTree(path.basename(opts.rootDir), startFiles);
+    //outputFileTree(opts.rootDir, startFiles);
 
     next(null, inspectedFiles, opts);
 
@@ -70,7 +64,37 @@ export default function (filePaths, opts, next) {
  │   └── c.gif
  └── b.js
  └── d/e/e.js
+
+archy
+ '│' : '|',
+ '└' : '`',
+ '├' : '+',
+ '─' : '-',
+ '┬' : '-'
+
+ deploy-asset@1.0.0-alpha /Users/Mora/Workspace/node/deploy-asset
+ ├─┬ alter@0.2.0
+ │ └── stable@0.1.5
+ ├── async@1.4.2
+
+
+ └─┬ ylog@0.2.2
+ ├─┬ are-we-there-yet@1.0.4
+ │ ├── delegates@0.1.0
+ │ └─┬ readable-stream@1.1.13
+ │   ├── core-util-is@1.0.1
+ │   ├── inherits@2.0.1
+ │   ├── isarray@0.0.1
+ │   └── string_decoder@0.10.31
+ ├─┬ chalk@1.1.1
+ │ ├── ansi-styles@2.1.0
+ │ ├── escape-string-regexp@1.0.3
+ │ ├─┬ has-ansi@2.0.0
+ │ │ └── ansi-regex@2.0.0
+ │ ├─┬ strip-ansi@3.0.0
+ │ │ └── ansi-regex@2.0.0
+ │ └── supports-color@2.0.0
+
  */
 function outputFileTree(base, files) {
-  // @TODO
 }

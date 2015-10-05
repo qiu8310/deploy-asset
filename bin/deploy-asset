@@ -1,0 +1,134 @@
+#!/usr/bin/env babel-node
+
+var yargs = require('yargs');
+var options = require('./da-options');
+var ylog = require('ylog');
+var _ = require('lodash');
+var jsonfy = require('jsonfy');
+var da = require('..');
+
+
+var argv = require('./da-completion')(yargs)
+  .version(require('../package.json').version).alias('v', 'version')
+  .usage("$0 [选项] [文件_或_目录]")
+  //.example('$0 count -f foo.js', '# count the lines in the given file')
+  //.example('$0 count', '# count the lines in the given file')
+  //.example('$0 count -f foo.js', '# count the lines in the given file')
+  .options(options)
+  .strict()
+  .implies({
+    outSuccess: 'outDir'
+  })
+  .help('help').alias('h', 'help')
+  .showHelpOnFail(false, '请使用 --help 查看可用的选项')
+  //.epilog('for more information, find our manual at http://example.com')
+  .argv;
+
+var rcDaOpts = require('rc')('da'); // 文件中的所有配置
+var cliDaOpts = {};   // 命令行上的所有配置
+var rawArgv = process.argv.slice(2);
+
+// 从命令行上获取配置
+Object.keys(options).forEach(function (k) {
+  if (k.indexOf('  ') === 0) return false;
+  var v = argv[k];
+  var t = options[k].type;
+
+  if ((k in argv) && typeof v !== 'undefined') {
+    if (t === 'string' && Array.isArray(v)) {
+      cliDaOpts[k] = v[v.length - 1];
+    } else if (t === 'array' && /Patterns$/.test(k)) {
+      cliDaOpts[k] = v.length === 0 ? true : v;
+    } else {
+      cliDaOpts[k] = v;
+    }
+  }
+});
+var cliUploaderOpts = cliDaOpts.uploaderOpts || {};
+if (typeof cliUploaderOpts === 'string') {
+  try {
+    cliUploaderOpts = jsonfy(cliUploaderOpts);
+  } catch (e) {}
+  cliDaOpts.uploaderOpts = cliUploaderOpts;
+}
+if (typeof cliUploaderOpts !== 'object') {
+  ylog.error('~uploaderOpts~ 参数配置错误，配置项需要支持解析成 JSON');
+  throw new Error('CONFIG_ERROR');
+}
+
+
+// 处理日志级别
+var levels = options.logLevel.choices;
+levels.forEach(function (l) {
+  if (cliDaOpts[l]) cliDaOpts.logLevel = l;
+  delete cliDaOpts[l];
+});
+if (cliDaOpts.detail && 4 + cliDaOpts.detail < levels.length) {
+  cliDaOpts.logLevel = levels[4 + cliDaOpts.detail];
+  delete cliDaOpts.detail;
+}
+ylog.setLevel(cliDaOpts.logLevel);
+
+// 从 .darc 文件中获取配置
+var rcConfigs = rcDaOpts.configs || [];
+if (rcConfigs.length) {
+  rcConfigs.forEach(function (c) {
+    ylog.info('找到配置文件 ^%s^ ，写入当前环境', c);
+  });
+  delete rcDaOpts.configs;
+  delete rcDaOpts.config;
+  if (rcConfigs.length > 1) ylog.silly('从 !%d! 个配置文件中合并后的配置是：', rcConfigs.length, rcDaOpts);
+  else ylog.silly('从配置文件中得到的配置是：', rcDaOpts);
+}
+
+
+// 合并命令行和 .darc 文件的配置
+var uploader = cliDaOpts.uploader || rcDaOpts.uploader,
+  rcUploaderOpts,
+  rcUploaderDaOpts;
+if (!uploader) {
+  ylog.error('请指定上传器名称');
+  throw Error('NO_UPLOADER');
+}
+
+
+rcUploaderOpts = rcDaOpts.uploaders[uploader] || rcDaOpts.uploaderOpts || {};
+rcUploaderDaOpts = rcUploaderOpts.options || {};
+
+delete rcDaOpts.uploaders;
+delete rcUploaderOpts.options;
+_.assign(rcDaOpts, rcUploaderDaOpts);
+cliUploaderOpts = _.assign(rcUploaderOpts, cliUploaderOpts);
+
+Object.keys(options).forEach(function (key) {
+  var opt = options[key] || {};
+  var keys = opt.alias ? [].concat(opt.alias, key) : [key];
+
+  // 如果配置文件中有指定，但命令行上没有指定，则使用配置文件中的
+  if ((key in rcDaOpts) && !keysExistInCLI(keys)) {
+    cliDaOpts[key] = rcDaOpts[key];
+  }
+});
+
+
+var daOpts = cliDaOpts;
+daOpts.uploaderOpts = cliUploaderOpts;
+if (cliUploaderOpts.alias) daOpts.uploader = cliUploaderOpts.alias;
+
+if (rcConfigs.length) ylog.verbose('配置文件和命令行两者合并后的选项：', daOpts);
+else ylog.verbose('命令行上的选项：', daOpts);
+
+da(argv._, daOpts, function (err, files, opts) {
+  if (err) {
+    ylog.color('red').fatal(daOpts.stack ? err : err.message);
+  } else {
+    ylog.ok('success');
+  }
+});
+
+function keysExistInCLI(keys) {
+  return _.any(keys, function (k) {
+    return _.includes(rawArgv, k.length > 1 ? '--' + k : '-' + k);
+  });
+}
+

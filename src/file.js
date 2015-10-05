@@ -170,6 +170,11 @@ export default class File {
      * @type {Array<Asset>}
      */
     this.assets = [];
+    /**
+     * 所有此文件中包含的静态资源所对应的文件
+     * @type {Array<File>}
+     */
+    this.assetFiles = [];
 
     /**
      * 上传相关的状态
@@ -325,10 +330,24 @@ export default class File {
     return assets;
   }
 
+
+  /**
+   * 根据此文件的 assets，创建对应的 files
+   */
+  resolveAssets() {
+    this.assetFiles = this.assets.map(asset => {
+      let file = File.findFileInRefs(asset.filePath);
+      if (!file) file = new File(asset.filePath, this.opts.rootDir, this.opts, asset);
+      file.addCaller(this);
+      return file;
+    });
+    return this.assetFiles;
+  }
+
   _inspectAssetsUsePattern(pattern, relativeDirs) {
     let result = [];
     ylog.silly(pattern.msg + '： **%s**', pattern.re);
-    this.contentString.replace(pattern.re, (raw, src, index) => {
+    this.remoteContentString.replace(pattern.re, (raw, src, index) => {
 
       ylog.silly(' 找到 *%s*', src);
 
@@ -394,7 +413,7 @@ export default class File {
     else if (this.type === File.STATIC_TYPE) ylog.verbose('*此文件类型不支持替换*');
     else if (!this.assets.length) ylog.verbose('*此文件没有依赖其它静态资源*');
     else {
-      this.remote.content = new Buffer(alter(this.contentString, this.assets.map(asset => {
+      this.remote.content = new Buffer(alter(this.remoteContentString, this.assets.map(asset => {
 
         let assetFilePath = asset.filePath;
         let assetRemote = File.findFileInRefs(assetFilePath).remote;

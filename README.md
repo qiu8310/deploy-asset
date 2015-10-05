@@ -30,7 +30,6 @@
 
 dry 时不要用 mockUploader，还是用原来的 uploader，只是在 它执行上传动作时做些手脚
 
-'destDir', 'baseUrl', 'appendDestDirToBaseUrl'
 
 ## 安装
 
@@ -47,6 +46,19 @@ npm install --global deploy-asset
 da <folder> [options]
 
 ```
+
+
+### [CLI-MD](https://github.com/finnp/cli-md/blob/master/index.js)
+
+CLI-TO-MD: 将 yargs 产生的 help 信息生成 markdown
+
+MD-TO-CLI: 用 markdown 来产生 yargs 的 help 信息 
+
+
+stripColor
+  
+
+
 
 **请使用 `da --help` 来查看所有支持的配置**
 
