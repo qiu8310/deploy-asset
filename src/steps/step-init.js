@@ -85,7 +85,7 @@ export default function (any, opts, next) {
     if (opts.overwrite && opts.diff) return next(new Error('OVERWRITE_AND_DIFF_CONFLICT'));
 
     // 遍历当前文件夹，找到所有文件
-    let filePaths = _parseDaAnyArgument(!any || !any.length ? opts.rootDir : any);
+    let filePaths = _parseDaAnyArgument(any.length ? any : opts.rootDir);
     if (filePaths.length === 0) return next(new Error('NO_FILES'));
 
     // 获取根目录

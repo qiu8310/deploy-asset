@@ -1,11 +1,11 @@
 {
   "name": "deploy-asset",
   "description": "Analyze web files and deploy them to CDN making them accessible.",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0",
   "homepage": "https://github.com/qiu8310/deploy-asset",
   "bugs": "https://github.com/qiu8310/deploy-asset/issues",
   "license": "MIT",
-  "main": "src/da.js",
+  "main": "build/da.js",
   "author": {
     "name": "Zhonglei Qiu",
     "email": "qiuzhongleiabc@126.com"
@@ -24,6 +24,7 @@
     "cdn",
     "server-deploy",
     "static",
+    "github",
     "ftp",
     "qiniu",
     "upyun"
@@ -33,6 +34,7 @@
     "async": "1.4.2",
     "binary-extensions": "^1.3.1",
     "dep.js": "0.0.2",
+    "es6-shim": "^0.33.6",
     "fs-extra": "0.24.0",
     "github-api": "^0.10.6",
     "glob": "^5.0.14",
@@ -41,14 +43,16 @@
     "jsonfy": "^0.1.0",
     "lodash": "^3.10.1",
     "mime": "1.3.4",
+    "min-asset": "0.0.2",
     "minimatch": "^2.0.10",
-    "mocha": "^2.3.3",
+    "pretty-bytes": "^2.0.1",
     "qiniu": "6.1.8",
     "rc": "^1.1.2",
     "slash": "^1.0.0",
+    "tty-wrap": "0.0.4",
     "upyun": "1.1.3",
     "x-path": "0.0.2",
-    "yargs": "qiu8310/yargs",
+    "yargs-cn": "0.0.2",
     "ylog": "0.2.2"
   },
   "devDependencies": {
@@ -56,6 +60,7 @@
     "coveralls": "^2.11.4",
     "ftp-test-server": "0.0.2",
     "istanbul": "^0.3.21",
+    "mocha": "^2.3.3",
     "mocha-lcov-reporter": "^1.0.0",
     "should": "^7.1.0"
   },
@@ -72,8 +77,10 @@
   "scripts": {
     "lint": "cs */__*__.js *.js && cs --jsx src/**.js || echo ''",
     "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json && echo 'code{padding: 2px 4px;font-size: 90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;}' >> ./docs/styles/jsdoc-default.css",
-    "test": "mocha -t 10000 --compilers js:babel/register test/test-*",
+    "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
+    "build": "babel src -d build",
+    "dev": "babel -w src -d build",
     "cover": "rm -rf ./coverage && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./cover.js",
-    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec -t 5000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   }
 }

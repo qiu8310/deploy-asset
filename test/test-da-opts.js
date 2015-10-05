@@ -40,6 +40,7 @@ describe('DAOpts', () => {
         any: 'basic/d/e',
         runToStep: 'init',
         cb(err, files, opts) {
+          if (err) throw err;
           opts.rootDir.should.eql(util.f('basic/d/e'));
         }
       },

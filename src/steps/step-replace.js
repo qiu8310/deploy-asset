@@ -14,6 +14,12 @@ export default function (files, opts, next) {
   try {
 
     let replace = (file, updateRemote) => {
+
+      if (file.type === File.STATIC_TYPE) {
+        if (updateRemote) file.updateRemote();
+        return true;
+      }
+
       ylog.info.title('开始替换文件 ^%s^ ...', file.relativePath);
 
       let assets = file.replace();
@@ -40,8 +46,11 @@ export default function (files, opts, next) {
 
     let resolve = (file) => {
       if (!(file instanceof File)) file = File.findFileInRefs(file);
+
       if (resolvedFiles.indexOf(file) >= 0) return false;
       resolvedFiles.push(file);
+
+      file.deepDepends.forEach(resolve);
 
       replace(file, true);
     };
@@ -88,11 +97,11 @@ export default function (files, opts, next) {
       opts.hash && opts.hash > 0 && opts.hashSource === 'remote' ||
       retrieveRemoteUrlAfterUploaded) {
 
+      ylog.info.title('检查是否有循环依赖的情况 ...');
       dependsCheck();
-      files.forEach(file => {
-        file.deepDepends.forEach(resolve);
-        resolve(file);
-      });
+      ylog.info.writeOk('循环依赖检查完成').ln();
+
+      files.forEach(resolve);
 
     } else {
       files.forEach(file => file.updateRemote());

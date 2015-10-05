@@ -1,12 +1,68 @@
 import ylog from 'ylog';
+import async from 'async';
+import _ from 'lodash';
 import path from 'x-path';
+import min from 'min-asset';
+import pb from 'pretty-bytes';
 
 import util from '../util';
 import File from '../File';
 
+function _getMinFileType(file) {
+  if (file.type === File.STATIC_TYPE) {
+    if (_.includes(['png', 'jpeg', 'jpg', 'gif', 'svg'], file.ext)) return 'image';
+  } else {
+    return file.type;
+  }
+}
+
+function _compress(file, done) {
+  let type = _getMinFileType(file);
+  let minOpts = file.opts['min' + _.capitalize(type)] || {};
+  if (!type) return done(null, file);
+
+  ylog.info.title('开始压缩文件 ^%s^ ...', file.relativePath);
+  min(file.content, type, minOpts, (err, data) => {
+
+    if (err) return done(err);
+    let oz = data.originalSize, mz = data.minifiedSize;
+    let diff = oz - mz;
+    let rate = (diff * 100 / oz).toFixed();
+    if (diff > 10) {
+      file.min = {};
+      file.min.originalSize = oz;
+      file.min.minifiedSize = mz;
+      file.min.diffSize = diff;
+      file.min.rate = rate;
+      ylog.info.writeOk('新文件 !%s! , 文件压缩了 ~%s~ , 压缩率 ~%s%~', pb(mz), pb(diff), rate).ln();
+      file.remote.content = data.content;
+    } else {
+      ylog.info.writeOk('*文件已经最小了，不需要压缩（改变压缩配置看看）*').ln();
+    }
+    done(null, file);
+
+  });
+}
+
+function _inspect(file, done) {
+  if (file.type === File.STATIC_TYPE) return done(null, []);
+
+  ylog.info.title('开始检查文件 ^%s^ ...', file.relativePath);
+
+  let assets = file.insp(file.opts.inspectFilter);
+
+  assets.forEach(a => {
+    ylog.verbose(`   资源 &%s-%s& : &%s&  *引用处: %s*`, a.start, a.end, a.src, a.raw);
+  });
+
+  ylog.info.writeOk('共找到 ^%s^ 处静态资源', assets.length).ln();
+
+  done(null, file.resolveAssets())
+}
+
 export default function (filePaths, opts, next) {
 
-  util.banner('资源检查');
+  util.banner('资源检查' + (opts.min ? '(并压缩)' : ''));
 
   File.refs = {}; // 先将引用清空
   let inspectedFiles = [];
@@ -18,36 +74,57 @@ export default function (filePaths, opts, next) {
       return file ? file : new File(filePath, opts.rootDir, opts, asset);
     };
 
-    let inspect = (file) => {
-      if (inspectedFiles.indexOf(file) >= 0) return [];
+    let inspect = (file, done) => {
+      if (inspectedFiles.indexOf(file) >= 0) return done(null, []);
       inspectedFiles.push(file);
 
-      ylog.info.title('开始检查文件 ^%s^ ...', file.relativePath);
-
-      let assets = file.insp(opts.inspectFilter);
-
-      assets.forEach(a => {
-        ylog.verbose(`   资源 &%s-%s& : &%s&  *引用处: %s*`, a.start, a.end, a.src, a.raw);
-      });
-      ylog.info.writeOk('共找到 ^%s^ 处静态资源', assets.length).ln();
-
-      return file.resolveAssets();
+      if (opts.min) {
+        _compress(file, (err, file) => {
+          if (err) return done(err);
+          _inspect(file, done);
+        });
+      } else {
+        _inspect(file, done);
+      }
     };
 
-    let walk = (files) => {
-      files.forEach(file => {
-        walk(inspect(file));
-      });
+    let walk = (files, done) => {
+      async.eachSeries(
+        files,
+
+        (file, next) => {
+          inspect(file, (err, assets) => {
+            if (err) return done(err);
+            walk(assets, next);
+          });
+        },
+
+        done
+      );
     };
 
     let startFiles = filePaths.map(getFile);
-    walk(startFiles);
+    walk(startFiles, err => {
+      if (err) return next(err);
 
-    ylog.verbose('检查后的文件 *%o*', inspectedFiles.map(file => file.relativePath));
+      ylog.verbose('检查后的文件 *%o*', inspectedFiles.map(file => file.relativePath));
+
+      err = inspectedFiles.some(f => {
+        if (!f.apply.upload && f.assets.length && f.apply.replace && !opts.outDir) {
+          ylog
+            .error('文件 ^%s^ 指定为不要上传，同时也没有指定 ~outDir~ 参数', f.relativePath).ln()
+            .error('但此文件包含有其它静态资源，它里面的内容会被替换').ln()
+            .error('所以如果不上传此文件，请指定一个输出目录，将更新后的文件输出在指定的目录内');
+
+          return true;
+        }
+      });
+
+      if (err) next(new Error('NO_OUT_DIR_FOR_FILE'));
+      else next(null, inspectedFiles, opts);
+    });
 
     //outputFileTree(opts.rootDir, startFiles);
-
-    next(null, inspectedFiles, opts);
 
   } catch (e) { return next(e); }
 

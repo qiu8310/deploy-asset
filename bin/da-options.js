@@ -8,6 +8,15 @@ module.exports = {
     type: 'string'
   },
 
+  noRootHtml: {
+    desc: '不上传根目录下的 HTML 文件，这是组合选项：相当于指定 `--abs *.html --nupl *.html --outDir out`',
+    type: 'boolean'
+  },
+  noAllHtml: {
+    desc: '不上传所有 HTML 文件，这是组合选项：相当于指定 `--abs **/*.html --nupl **/*.html --outDir out',
+    type: 'boolean'
+  },
+
   '  远程环境': { desc: ' ' },
 
   destDir: {
@@ -244,11 +253,11 @@ module.exports = {
   },
   logLevel: {
     alias: 'l',
-    choices: ['silent', 'fatal', 'error', 'ok', 'warn', 'info', 'debug', 'verbose', 'silly'],
+    choices: ['silent', 'fatal', 'error', 'warn', 'ok', 'info', 'debug', 'verbose', 'silly'],
     desc: '指定输出的日志级别',
     type: 'string',
     requiresArg: true,
-    'default': 'warn'
+    'default': 'ok'
   },
   verbose: {
     desc: '将日志级别设置成 `verbose`，也可以直接用 `-ddd`',
@@ -266,6 +275,39 @@ module.exports = {
     config: true,
     requiresArg: true,
     type: 'string'
+  },
+  minImage: {
+    alias: 'mi',
+    desc: '压缩图片的配置，请使用 mi.xx 的形式配置，配置项和 min-asset 一致，下同' +
+    '\n  optimizationLevel: 0-7, 默认是 3' +
+    '\n'
+  },
+  minHtml: {
+    alias: 'mh',
+    desc: '压缩 HTML 的配置，请使用 mh.xx 的形式配置' +
+    '\n  noCollapseWhitespace' +
+    '\n  noCollapseBooleanAttributes' +
+    '\n  noRemoveRedundantAttributes' +
+    '\n  noUseShortDoctype' +
+    '\n  noRemoveScriptTypeAttributes' +
+    '\n  noMinifyJS' +
+    '\n  noMinifyCSS' +
+    '\n'
+  },
+  minCss: {
+    alias: 'mc',
+    desc: '压缩 CSS 的配置，可配置项有，表使用 mc.xx 的形式配置' +
+    '\n  compatibility: ie7/ie8/*' +
+    '\n  keepSpecialComments: 0/1/*' +
+    '\n'
+  },
+  minJs: {
+    alias: 'mj',
+    desc: '压缩 JS 的配置，可配置项有，请使用 mj.xx 的形式配置' +
+    '\n  noMangle' +
+    '\n  noDeadCode' +
+    '\n  dropConsole' +
+    '\n'
   },
   htmlExtensions: {
     desc: '指定 html 的后缀名',

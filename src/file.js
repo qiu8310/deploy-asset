@@ -177,6 +177,12 @@ export default class File {
     this.assetFiles = [];
 
     /**
+     * 压缩相关的信息
+     * @type {{originalSize: Number, minifiedSize: Number, diffSize: Number, rate: String}}
+     */
+    this.min = null;
+
+    /**
      * 上传相关的状态
      * @type {{exists: null, conflict: null, uploaded: null, success: boolean}}
      */
@@ -498,12 +504,14 @@ export default class File {
     uploader.getRemoteFileContent(this, (err, content) => {
       if (err) return error(err);
 
-      this.status.conflict = this.content.compare(content) !== 0;
+      this.status.conflict = this.remote.content.compare(content) !== 0;
 
       if (this.status.conflict) {
         let ignore = this.opts.ignoreConflictError;
         let level = ignore ? 'warn' : 'error';
-        ylog[level].writeError('文件 ^%s^ 上传失败，它和远程文件 ^%s^ 的内容不一致', this.relativePath, this.remote.url);
+        ylog[level].writeError(
+          '文件 ^%s^ 上传失败，它和远程文件 ^%s^ 的内容不一致（注意：在浏览器上看到的结果可能并不是最新的）',
+          this.relativePath, this.remote.url);
 
         if (!ignore)
           ylog[level]('你可以启用 ~ignoreConflictError~ 来忽略此错误，但不继续上传文件')

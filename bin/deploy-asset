@@ -1,14 +1,20 @@
-#!/usr/bin/env babel-node
+#!/usr/bin/env node
 
 var yargs = require('yargs');
 var options = require('./da-options');
 var ylog = require('ylog');
+var fs = require('fs-extra');
+var path = require('path');
+var EOL = require('os').EOL;
 var _ = require('lodash');
 var jsonfy = require('jsonfy');
+var tw = require('tty-wrap');
+var pb = require('pretty-bytes');
 var da = require('..');
+var chalk = tw.chalk;
 
-
-var argv = require('./da-completion')(yargs)
+//var argv = require('./da-completion')(yargs)
+var argv = yargs
   .version(require('../package.json').version).alias('v', 'version')
   .usage("$0 [选项] [文件_或_目录]")
   //.example('$0 count -f foo.js', '# count the lines in the given file')
@@ -27,6 +33,18 @@ var argv = require('./da-completion')(yargs)
 var rcDaOpts = require('rc')('da'); // 文件中的所有配置
 var cliDaOpts = {};   // 命令行上的所有配置
 var rawArgv = process.argv.slice(2);
+var groupOpts = {
+  noRootHtml: {
+    absolutePatterns: ['*.html'],
+    noUploadPatterns: ['*.html'],
+    outDir: 'out'
+  },
+  noAllHtml: {
+    absolutePatterns: ['**/*.html'],
+    noUploadPatterns: ['**/*.html'],
+    outDir: 'out'
+  }
+};
 
 // 从命令行上获取配置
 Object.keys(options).forEach(function (k) {
@@ -55,6 +73,14 @@ if (typeof cliUploaderOpts !== 'object') {
   ylog.error('~uploaderOpts~ 参数配置错误，配置项需要支持解析成 JSON');
   throw new Error('CONFIG_ERROR');
 }
+
+Object.keys(groupOpts).forEach(function (key) {
+  var opts = groupOpts[key];
+  Object.keys(opts).forEach(function (optKey) {
+    if (!cliDaOpts[optKey]) cliDaOpts[optKey] = opts[optKey];
+  });
+  delete options[key];
+});
 
 
 // 处理日志级别
@@ -104,12 +130,15 @@ Object.keys(options).forEach(function (key) {
   var opt = options[key] || {};
   var keys = opt.alias ? [].concat(opt.alias, key) : [key];
 
-  // 如果配置文件中有指定，但命令行上没有指定，则使用配置文件中的
-  if ((key in rcDaOpts) && !keysExistInCLI(keys)) {
+  // 合并配置文件和命令行上的选项
+  if (['minHtml', 'minCss', 'minImage', 'minJs'].indexOf(key) >= 0) {
+    cliDaOpts[key] = _.assign({}, rcDaOpts[key], cliDaOpts[key]);
+
+    // 如果配置文件中有指定，但命令行上没有指定，则使用配置文件中的
+  } else if ((key in rcDaOpts) && !keysExistInCLI(keys)) {
     cliDaOpts[key] = rcDaOpts[key];
   }
 });
-
 
 var daOpts = cliDaOpts;
 daOpts.uploaderOpts = cliUploaderOpts;
@@ -121,14 +150,107 @@ else ylog.verbose('命令行上的选项：', daOpts);
 da(argv._, daOpts, function (err, files, opts) {
   if (err) {
     ylog.color('red').fatal(daOpts.stack ? err : err.message);
-  } else {
-    ylog.ok('success');
+  } else if (files.length) {
+
+    var data = [],
+      sortMap = {html: 1, js: 2, css: 3, json: 4};
+
+    if (opts.outDir) fs.ensureDirSync(opts.outDir);
+
+    files.sort(function (a, b) {
+      return (sortMap[a.type] || 5) - (sortMap[b.type] || 5);
+    }).forEach(function (f) {
+      writeToLocal(f, opts);
+      data.push(genFileTableRow(f, opts));
+    });
+
+    console.log(EOL);
+    tw.table(
+      data,
+      {
+        left: 4,
+        right: 10,
+        console: true,
+
+        showHead: true
+      },
+      {
+        head: {
+          color: 'bold',
+          paddingBottom: 1
+        },
+        colB: { align: 'center' },
+        colC: { align: 'center' },
+        cellAD: { align: 'center' },
+        colD: { align: 'right' },
+        colE: { align: 'center' }
+      }
+    );
+    console.log(EOL);
+
   }
 });
 
+
+
 function keysExistInCLI(keys) {
   return _.any(keys, function (k) {
-    return _.includes(rawArgv, k.length > 1 ? '--' + k : '-' + k);
+    k = k.length > 1 ? '--' + k : '-' + k;
+    return _.any(rawArgv, function (arg) {
+      return arg === k || arg.indexOf(k + '.') === 0;
+    });
   });
 }
 
+var RIGHT = chalk.green('✔');
+var GRAY = chalk.gray('✘');
+/**
+ *
+ * @param {File} file
+ * @param {DAOpts} opts
+ */
+function genFileTableRow(file, opts) {
+  var row = {};
+  var apply = file.apply, min = file.min, s = file.status;
+  var size, rate = '';
+  if (min) {
+    size = pb(min.minifiedSize);
+    rate = min.rate;
+    if (rate > 50) rate = chalk.red(rate + '%');
+    else if (rate > 10) rate = chalk.yellow(rate + '%');
+    else rate = chalk.gray(' ' + rate + '%');
+  } else {
+    size = pb(file.contentString.length);
+    rate = GRAY;
+  }
+
+  row['本地路径'] = file.relativePath;
+  row['资源检查'] = apply.inspect ? RIGHT : GRAY;
+  row['绝对引用'] = apply.absolute ? RIGHT : GRAY;
+  row['压缩'] = size + ' ' + rate;
+  row['上传结果'] = !apply.upload ? GRAY : s.success ? RIGHT :
+    chalk.red(s.conflict ? '冲突' : s.exists ? '已存在' :
+      s.uploaded === null ? '未上传' : s.uploaded ? '未知' : '上传失败');
+  row['远程路径'] = file.remote.url;
+  return row;
+}
+
+/**
+ *
+ * @param {File} file
+ * @param {DAOpts} opts
+ */
+function writeToLocal(file, opts) {
+  if (!opts.outDir) return false;
+  if (
+    opts.outSuccess && file.status.success
+    || opts.outError && !file.status.success
+    || file.assets.length && !file.apply.upload && file.apply.replace
+  ) {
+    var dir = path.join(opts.rootDir, opts.outDir, file.remote.relative);
+    var fp = path.join(dir, file.remote.basename);
+    fs.ensureDirSync(dir);
+    fs.writeFileSync(fp, file.remote.content);
+    ylog.ok('将 ^%s^ 文件的远程文件内容写入到 ^%s^ 文件中', file.relativePath, fp);
+  }
+}
