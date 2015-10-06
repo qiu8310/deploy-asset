@@ -12,11 +12,11 @@ step-init
 
  NO_FILES: 根据 da 的 any 参数，没有找到一个文件
 
-x   FILE_NOT_IN_ROOT_DIR: 文件不在根目录内
+ FILE_NOT_IN_ROOT_DIR: 文件不在根目录内
 
  NO_FILE_AFTER_FILTER: 所有找到的文件在执行完 includePatterns 和 noIncludePatterns 后就没有文件了
 
-x   UPLOADER_NOT_FOUND: opts 中指定的 uploader 没有找到
+ UPLOADER_NOT_FOUND: opts 中指定的 uploader 没有找到
  UPLOADER_CONFIG_ERROR
 
 
@@ -29,6 +29,9 @@ x   UPLOADER_NOT_FOUND: opts 中指定的 uploader 没有找到
 step-inspect
 
  NONE_ASSET  inspect 找到的 asset 资源不存在
+
+NO_OUT_DIR_FOR_FILE  没有为不上传的文件指定 outDir
+DEPEND_ASSET_NOT_UPLOAD  要上传的文件依赖了没有上传的文件
 
 
 step-replace

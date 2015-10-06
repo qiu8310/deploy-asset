@@ -18,7 +18,7 @@ describe('DAErrors', () => {
 
   let ONLY, TYPE, INDEX;
 
-  //ONLY = 'REMOTE_FILE_CONFLICT';
+  //ONLY = 'DEPEND_ASSET_NOT_UPLOAD';
   //TYPE = 'errors';
   //INDEX = 1;
 
@@ -126,6 +126,22 @@ describe('DAErrors', () => {
       ],
       oks: [
         {any: 'errors/none-asset.html', ignoreNoneAssetError: true}
+      ]
+    },
+
+
+    NO_OUT_DIR_FOR_FILE: {
+      msg: '要为没有上传的但确有依赖的文件指定 outDir',
+      errors: [
+        {any: 'basic/index.html', noUploadPatterns: '*.html'},
+        {any: 'basic/index.html', noUploadPatterns: '**/*.css'}
+      ]
+    },
+
+    DEPEND_ASSET_NOT_UPLOAD: {
+      msg: '要上传的文件依赖了没有上传的文件',
+      errors: [
+        {any: 'basic/index.html', noUploadPatterns: '**/*.gif'}
       ]
     },
 

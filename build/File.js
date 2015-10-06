@@ -81,7 +81,7 @@ var File = (function () {
    * @param {String} filePath - 文件的路径
    * @param {String} rootDir - 此文件的根目录
    * @param {DAOpts} [opts = {}] - 配置项
-   * @param {Asset} [asset = {}] - 传了此值，表示此文件是从别的文件中找到的
+   * @param {Asset} [asset = {}] - 传了此值，表示此文件是从别的文件中找到的，此参数作用不大，可以忽略
    *
    * @throws ENOENT 文件不存在时，会抛出异常
    */
@@ -267,12 +267,27 @@ var File = (function () {
    */
 
   /**
-   * 根据文件路径，找到对应的文件
-   * @param {String} filePath
-   * @returns {File|Undefined}
+   * 文件是否应该保存到本地
+   *
+   * 条件是：此文件不要上传，但它包含有要上传的静态资源，并且要执行替换资源操作
+   *
+   * @returns {boolean}
    */
 
   _createClass(File, [{
+    key: 'shouldSave',
+    value: function shouldSave() {
+      return !this.apply.upload && this.apply.replace && this.assets.length && this.assets.some(function (f) {
+        return File.findFileInRefs(f.filePath).apply.upload;
+      });
+    }
+
+    /**
+     * 根据文件路径，找到对应的文件
+     * @param {String} filePath
+     * @returns {File|Undefined}
+     */
+  }, {
     key: 'updateRemoteBasename',
 
     /**

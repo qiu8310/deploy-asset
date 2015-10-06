@@ -71,7 +71,7 @@ module.exports = {
   '  上传': { desc: ' ' },
 
   uploader: {
-    alias: 'u',
+    alias: ['u'],
     desc: '指定要使用的上传器，同时会在 .darc 文件中定位到相关的配置',
     requiresArg: true,
     type: 'string'
@@ -193,6 +193,7 @@ module.exports = {
     'default': 'upload'
   },
   dependsCheck: {
+    align: 'dc',
     desc: '强制进行文件依赖关系的解析，找出循环依赖的地方',
     type: 'boolean'
   },

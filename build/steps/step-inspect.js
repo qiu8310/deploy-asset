@@ -138,15 +138,28 @@ exports['default'] = function (filePaths, opts, next) {
           return file.relativePath;
         }));
 
+        // 检查是否为没有上传，同时又包含其它上传了的静态资源的文件指定 outDir
         err = inspectedFiles.some(function (f) {
-          if (!f.apply.upload && f.assets.length && f.apply.replace && !opts.outDir) {
-            _ylog2['default'].error('文件 ^%s^ 指定为不要上传，同时也没有指定 ~outDir~ 参数', f.relativePath).ln().error('但此文件包含有其它静态资源，它里面的内容会被替换').ln().error('所以如果不上传此文件，请指定一个输出目录，将更新后的文件输出在指定的目录内');
+          if (f.shouldSave() && !opts.outDir) {
+            _ylog2['default'].error('没有指定 ~outDir~ 参数').ln().error('文件 ^%s^ 指定为不要上传，但此文件包含有其它静态资源，它里面的内容会被替换', f.relativePath).ln().error('所以如果不上传此文件，请指定一个输出目录，将更新后的文件输出在指定的目录内');
 
             return true;
           }
         });
+        if (err) return next(new Error('NO_OUT_DIR_FOR_FILE'));
 
-        if (err) next(new Error('NO_OUT_DIR_FOR_FILE'));else next(null, inspectedFiles, opts);
+        err = inspectedFiles.some(function (f) {
+          var a = f.assets.length && f.assets.find(function (a) {
+            return !getFile(a.filePath).apply.upload;
+          });
+          if (f.apply.upload && f.apply.replace && a) {
+            _ylog2['default'].error('文件 ^%s^ 需要上传，但它所依赖的静态 ^%s^ 却没有上传', f.relativePath, a.filePath).ln().error('这样可能会导致上传的文件找不到它的依赖而显示不正常');
+            return true;
+          }
+        });
+        if (err) return next(new Error('DEPEND_ASSET_NOT_UPLOAD'));
+
+        next(null, inspectedFiles, opts);
       });
 
       //outputFileTree(opts.rootDir, startFiles);

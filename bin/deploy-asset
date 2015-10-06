@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var yargs = require('yargs');
+var yargs = require('yargs-cn');
 var options = require('./da-options');
 var ylog = require('ylog');
 var fs = require('fs-extra');
@@ -76,9 +76,11 @@ if (typeof cliUploaderOpts !== 'object') {
 
 Object.keys(groupOpts).forEach(function (key) {
   var opts = groupOpts[key];
-  Object.keys(opts).forEach(function (optKey) {
-    if (!cliDaOpts[optKey]) cliDaOpts[optKey] = opts[optKey];
-  });
+  if (argv[key]) {
+    Object.keys(opts).forEach(function (optKey) {
+      if (!cliDaOpts[optKey]) cliDaOpts[optKey] = opts[optKey];
+    });
+  }
   delete options[key];
 });
 
@@ -141,6 +143,8 @@ Object.keys(options).forEach(function (key) {
 });
 
 var daOpts = cliDaOpts;
+daOpts.uploaderName = daOpts.uploader;
+delete daOpts.uploader;
 daOpts.uploaderOpts = cliUploaderOpts;
 if (cliUploaderOpts.alias) daOpts.uploader = cliUploaderOpts.alias;
 
@@ -155,12 +159,9 @@ da(argv._, daOpts, function (err, files, opts) {
     var data = [],
       sortMap = {html: 1, js: 2, css: 3, json: 4};
 
-    if (opts.outDir) fs.ensureDirSync(opts.outDir);
-
     files.sort(function (a, b) {
       return (sortMap[a.type] || 5) - (sortMap[b.type] || 5);
     }).forEach(function (f) {
-      writeToLocal(f, opts);
       data.push(genFileTableRow(f, opts));
     });
 
@@ -187,6 +188,14 @@ da(argv._, daOpts, function (err, files, opts) {
       }
     );
     console.log(EOL);
+
+    if (opts.outDir) {
+      fs.ensureDirSync(opts.outDir);
+      files.forEach(function (f) {
+        writeToLocal(f, opts);
+      });
+      console.log(EOL);
+    }
 
   }
 });
@@ -231,7 +240,7 @@ function genFileTableRow(file, opts) {
   row['上传结果'] = !apply.upload ? GRAY : s.success ? RIGHT :
     chalk.red(s.conflict ? '冲突' : s.exists ? '已存在' :
       s.uploaded === null ? '未上传' : s.uploaded ? '未知' : '上传失败');
-  row['远程路径'] = file.remote.url;
+  row['远程路径'] = s.success ? file.remote.url : chalk.gray('（没有上传）');
   return row;
 }
 
@@ -241,16 +250,16 @@ function genFileTableRow(file, opts) {
  * @param {DAOpts} opts
  */
 function writeToLocal(file, opts) {
-  if (!opts.outDir) return false;
   if (
     opts.outSuccess && file.status.success
     || opts.outError && !file.status.success
-    || file.assets.length && !file.apply.upload && file.apply.replace
+    || file.shouldSave()
   ) {
     var dir = path.join(opts.rootDir, opts.outDir, file.remote.relative);
     var fp = path.join(dir, file.remote.basename);
     fs.ensureDirSync(dir);
     fs.writeFileSync(fp, file.remote.content);
-    ylog.ok('将 ^%s^ 文件的远程文件内容写入到 ^%s^ 文件中', file.relativePath, fp);
+    ylog.ok.no.tag.pad(4).writeOk('成功将 ^%s^ 文件的远程文件内容写入到 ^%s^ 文件', file.relativePath, fp);
   }
 }
+

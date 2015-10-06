@@ -157,8 +157,9 @@ exports['default'] = function (any, opts, next) {
           v: next(new Error('NO_FILE_AFTER_FILTER'))
         };
 
-      opts.env = new _ServerEnv2['default'](opts);
       _createUploader(opts, DEFAULTS);
+      opts.env = new _ServerEnv2['default'](opts);
+      if (opts.uploader) opts.uploader.env = opts.env;
 
       next(null, filePaths, opts);
     })();

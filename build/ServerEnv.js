@@ -36,7 +36,7 @@ var ServerEnv = (function () {
      */
     this.destDir = 'destDir' in opts ? opts.destDir : '/';
 
-    var uploaderOpts = opts.uploaderOpts;
+    var uploaderOpts = opts.uploader ? opts.uploader.opts : opts.uploaderOpts;
 
     var baseUrl = opts.baseUrl || uploaderOpts.baseUrl || uploaderOpts.domain;
     if (!baseUrl) throw new Error('NO_SPECIFY_BASE_URL');

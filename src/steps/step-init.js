@@ -119,8 +119,9 @@ export default function (any, opts, next) {
     if (!filePaths.length) return next(new Error('NO_FILE_AFTER_FILTER'));
 
 
-    opts.env = new ServerEnv(opts);
     _createUploader(opts, DEFAULTS);
+    opts.env = new ServerEnv(opts);
+    if (opts.uploader) opts.uploader.env = opts.env;
 
 
     next(null, filePaths, opts);

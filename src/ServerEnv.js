@@ -16,7 +16,7 @@ class ServerEnv {
      */
     this.destDir = 'destDir' in opts ? opts.destDir : '/';
 
-    let uploaderOpts = opts.uploaderOpts;
+    let uploaderOpts = opts.uploader ? opts.uploader.opts : opts.uploaderOpts;
 
     let baseUrl = opts.baseUrl || uploaderOpts.baseUrl || uploaderOpts.domain;
     if (!baseUrl) throw new Error('NO_SPECIFY_BASE_URL');
