@@ -34,7 +34,7 @@ var _fsExtra = require('fs-extra');
 
 var _fsExtra2 = _interopRequireDefault(_fsExtra);
 
-var FTP = require('jsftp-mkdirp')(require('jsftp'));
+var FTP = require('jsftp-mkdirp')(require('jsftp-for-deploy-asset'));
 
 var FtpUploader = (function (_Uploader) {
   _inherits(FtpUploader, _Uploader);

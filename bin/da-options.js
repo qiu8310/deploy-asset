@@ -74,6 +74,7 @@ module.exports = {
     alias: ['u'],
     desc: '指定要使用的上传器，同时会在 .darc 文件中定位到相关的配置',
     requiresArg: true,
+    'default': 'qiniu',
     type: 'string'
   },
   uploaderOpts: {

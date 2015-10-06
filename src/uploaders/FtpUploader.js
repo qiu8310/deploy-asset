@@ -10,7 +10,7 @@ import Uploader from './Uploader';
 import path from 'path';
 import fs from 'fs-extra';
 
-var FTP = require('jsftp-mkdirp')(require('jsftp'));
+var FTP = require('jsftp-mkdirp')(require('jsftp-for-deploy-asset'));
 
 class FtpUploader extends Uploader {
 

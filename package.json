@@ -38,7 +38,7 @@
     "fs-extra": "0.24.0",
     "github-api": "^0.10.6",
     "glob": "^5.0.14",
-    "jsftp": "qiu8310/jsftp",
+    "jsftp-for-deploy-asset": "*",
     "jsftp-mkdirp": "1.0.0",
     "jsonfy": "^0.1.0",
     "lodash": "^3.10.1",

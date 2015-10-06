@@ -121,7 +121,7 @@ if (!uploader) {
 }
 
 
-rcUploaderOpts = rcDaOpts.uploaders[uploader] || rcDaOpts.uploaderOpts || {};
+rcUploaderOpts = rcDaOpts.uploaders && rcDaOpts.uploaders[uploader] || rcDaOpts.uploaderOpts || {};
 rcUploaderDaOpts = rcUploaderOpts.options || {};
 
 delete rcDaOpts.uploaders;
@@ -212,8 +212,9 @@ function keysExistInCLI(keys) {
   });
 }
 
-var RIGHT = chalk.green('✔');
-var GRAY = chalk.gray('✘');
+var isWin = require('os').platform() === 'win32';
+var RIGHT = chalk.green(isWin ? 'OK' : '✔');
+var GRAY = chalk.gray(isWin ? 'NO' : '✘');
 /**
  *
  * @param {File} file
