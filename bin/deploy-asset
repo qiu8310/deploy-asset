@@ -55,13 +55,14 @@ Object.keys(options).forEach(function (k) {
   if ((k in argv) && typeof v !== 'undefined') {
     if (t === 'string' && Array.isArray(v)) {
       cliDaOpts[k] = v[v.length - 1];
-    } else if (t === 'array' && /Patterns$/.test(k)) {
+    } else if (t === 'array' && /Patterns$/.test(k)) { // 没有作用，如果没传值，不会得到空数组
       cliDaOpts[k] = v.length === 0 ? true : v;
     } else {
       cliDaOpts[k] = v;
     }
   }
 });
+
 var cliUploaderOpts = cliDaOpts.uploaderOpts || {};
 if (typeof cliUploaderOpts === 'string') {
   try {

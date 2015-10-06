@@ -43,15 +43,15 @@ describe('DAErrors', () => {
       ]
     },
 
-    NO_SPECIFY_BASE_URL: {
-      msg: '没有指定 baseUrl 参数',
-      errors: [
-        {runToStep: 'init', noBaseUrl: true}
-      ],
-      ok: [
-        {runToStep: 'init'}
-      ]
-    },
+    //NO_SPECIFY_BASE_URL: {
+    //  msg: '没有指定 baseUrl 参数',
+    //  errors: [
+    //    {runToStep: 'init', noBaseUrl: true}
+    //  ],
+    //  ok: [
+    //    {runToStep: 'init'}
+    //  ]
+    //},
 
     OVERWRITE_AND_DIFF_CONFLICT: {
       msg: '不能同时指定 overwrite 和 conflict',

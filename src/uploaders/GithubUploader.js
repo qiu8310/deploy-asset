@@ -125,8 +125,8 @@ GithubUploader.config = {
   error: {
     auth: 'Github 的认证方式(basic/oauth)',
     user: 'Github 用户名',
-    pass: 'Github 用户密码',
-    token: 'Github 的 oauth token',
+    pass: ['Github 用户密码', , true],
+    token: ['Github 的 oauth token', , true],
     domain: 'Github 的域名',
     repo: 'Git 创库名称',
     branch: 'Git 的分支'

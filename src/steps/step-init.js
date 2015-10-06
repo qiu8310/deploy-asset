@@ -27,13 +27,13 @@ function _initUploader(opts, DEFAULTS) {
 
 function _createUploader(opts, DEFAULTS) {
   let uploader = opts.uploader;
-  if (DEFAULTS.APPLY_STEP.upload) {
-    if (!(uploader instanceof Uploader))
-      uploader = Uploader.instance(opts.uploaderName, opts.uploaderOpts, opts.env);
+  //if (DEFAULTS.APPLY_STEP.upload) {
+  if (!(uploader instanceof Uploader))
+    uploader = Uploader.instance(opts.uploaderName, opts.uploaderOpts, opts.env);
 
-    opts.uploader = uploader;
-    _configOptsAccordingUploader(opts, uploader);
-  }
+  opts.uploader = uploader;
+  _configOptsAccordingUploader(opts, uploader);
+  //}
 }
 
 function _configOptsAccordingUploader(opts, uploader) {
@@ -121,7 +121,7 @@ export default function (any, opts, next) {
 
     _createUploader(opts, DEFAULTS);
     opts.env = new ServerEnv(opts);
-    if (opts.uploader) opts.uploader.env = opts.env;
+    opts.uploader.env = opts.env;
 
 
     next(null, filePaths, opts);
