@@ -174,12 +174,6 @@ module.exports = {
     desc: '是否要对所有上传的文件进行压缩',
     type: 'boolean'
   },
-  compatibility: {
-    alias: 'cpt',
-    desc: '指定压缩的兼容性，需要配合 --min 一起使用，另外有些压缩器不一定支持',
-    choices: ['ie7', 'ie8', 'modern'],
-    type: 'string'
-  },
   dry: {
     desc: '只输出运行结果，并不上传文件',
     type: 'boolean'

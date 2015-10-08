@@ -15,13 +15,12 @@
 [JSDOC Generated Document](http://qiu8310.github.io/deploy-asset)
 
 ## TODO
-- [ ] 压缩参数
-- [ ] 依赖的文件没有上传的错误
+
 - [ ] update-notifier - Update notifications for your CLI app.
 - [ ] uploader 可以指定在上传完后才生成远程链接，这样就强制 concurrency 为 1 了
-
-dry 时不要用 mockUploader，还是用原来的 uploader，只是在 它执行上传动作时做些手脚
-
+- [ ] [CLI-MD](https://github.com/finnp/cli-md/blob/master/index.js)
+  - [ ] CLI-TO-MD: 将 yargs 产生的 help 信息生成 markdown (HERE_DOC)
+  - [ ] MD-TO-CLI: 用 markdown 来产生 yargs 的 help 信息 (HERE_DOC)
 
 ## 安装
 
@@ -37,18 +36,7 @@ npm install --global deploy-asset
 
 da <folder> [options]
 
-```
-
-
-### [CLI-MD](https://github.com/finnp/cli-md/blob/master/index.js)
-
-CLI-TO-MD: 将 yargs 产生的 help 信息生成 markdown
-
-MD-TO-CLI: 用 markdown 来产生 yargs 的 help 信息 
-
-  
-
-
+```  
 
 **请使用 `da --help` 来查看所有支持的配置**
 

@@ -13,6 +13,15 @@ var pb = require('pretty-bytes');
 var da = require('..');
 var chalk = tw.chalk;
 
+ylog.levelFlag('silly',   -Infinity, chalk.bold.gray('[S]'));
+ylog.levelFlag('verbose', 1000, chalk.bold.blue('[V]'));
+ylog.levelFlag('debug',   2000, chalk.bold.magenta('[D]'));
+ylog.levelFlag('info',    3000, chalk.bold.cyan('[I]'));
+ylog.levelFlag('ok',      4000, chalk.bold.green(' '));
+ylog.levelFlag('warn',    5000, chalk.bold.yellow('[!]'));
+ylog.levelFlag('error',   6000, chalk.bold.red('[X]'));
+ylog.levelFlag('fatal',   7000, chalk.bold.red('XXX'));
+
 //var argv = require('./da-completion')(yargs)
 var argv = yargs
   .version(require('../package.json').version).alias('v', 'version')
@@ -152,7 +161,7 @@ if (cliUploaderOpts.alias) daOpts.uploader = cliUploaderOpts.alias;
 if (rcConfigs.length) ylog.verbose('配置文件和命令行两者合并后的选项：', daOpts);
 else ylog.verbose('命令行上的选项：', daOpts);
 
-da(argv._, daOpts, function (err, files, opts) {
+da(argv._.length ? argv._ : process.cwd(), daOpts, function (err, files, opts) {
   if (err) {
     ylog.color('red').fatal(daOpts.stack ? err : err.message);
   } else if (files.length) {
