@@ -47,7 +47,7 @@ process.on('exit', (code) => {
 
 describe('Uploaders', () => {
 
-  let allUploaderNames = ['ftp', 'qiniu', 'upyun'];
+  let allUploaderNames = ['qiniu', 'upyun'];
   //let allUploaderNames = ['github'];
 
   allUploaderNames.forEach(uploaderName => {

@@ -10,16 +10,20 @@ class ServerEnv {
 
   constructor(opts) {
 
+    let uploaderOpts = Object.assign({}, opts.uploaderOpts, opts.uploader && opts.uploader.opts || {});
+
+    let baseUrl = opts.baseUrl || uploaderOpts.baseUrl || uploaderOpts.domain;
+    if (!baseUrl) throw new Error('NO_SPECIFY_BASE_URL');
+
+    let getVal = (key, dft) => {
+      return key in opts ? opts[key] : (key in uploaderOpts ? uploaderOpts[key] : dft);
+    };
+
     /**
      * 根目录
      * @type {string}
      */
-    this.destDir = 'destDir' in opts ? opts.destDir : '/';
-
-    let uploaderOpts = opts.uploader ? opts.uploader.opts : opts.uploaderOpts;
-
-    let baseUrl = opts.baseUrl || uploaderOpts.baseUrl || uploaderOpts.domain;
-    if (!baseUrl) throw new Error('NO_SPECIFY_BASE_URL');
+    this.destDir = getVal('destDir', '/');
 
     /**
      * 远程服务器的基本 URL
@@ -32,7 +36,7 @@ class ServerEnv {
      * 是否要 destDir 附加到 baseUrl 中
      * @type {boolean}
      */
-    this.appendDestDirToBaseUrl = 'appendDestDirToBaseUrl' in opts ? opts.appendDestDirToBaseUrl : true;
+    this.appendDestDirToBaseUrl = getVal('appendDestDirToBaseUrl', true);
 
   }
 

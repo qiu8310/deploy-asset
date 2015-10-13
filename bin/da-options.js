@@ -21,7 +21,6 @@ module.exports = {
 
   destDir: {
     desc: '指定要部署到的远程服务器的目录',
-    'default': '/',
     requiresArg: true,
     type: 'string'
   },
@@ -34,7 +33,6 @@ module.exports = {
   appendDestDirToBaseUrl: {
     alias: 'adb',
     desc: '将远程服务器目录的路径附加到 baseUrl 上',
-    'default': true,
     type: 'boolean'
   },
   prefix: {
@@ -74,7 +72,6 @@ module.exports = {
     alias: ['u'],
     desc: '指定要使用的上传器，同时会在 .darc 文件中定位到相关的配置',
     requiresArg: true,
-    'default': 'qiniu',
     type: 'string'
   },
   uploaderOpts: {
