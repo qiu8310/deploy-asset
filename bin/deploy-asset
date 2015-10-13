@@ -156,7 +156,7 @@ var daOpts = cliDaOpts;
 daOpts.uploaderName = daOpts.uploader;
 delete daOpts.uploader;
 daOpts.uploaderOpts = cliUploaderOpts;
-if (cliUploaderOpts.alias) daOpts.uploader = cliUploaderOpts.alias;
+if (cliUploaderOpts.alias) daOpts.uploaderName = cliUploaderOpts.alias;
 
 if (rcConfigs.length) ylog.verbose('配置文件和命令行两者合并后的选项：', daOpts);
 else ylog.verbose('命令行上的选项：', daOpts);

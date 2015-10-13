@@ -61,7 +61,7 @@ class FtpUploader extends Uploader {
         else done(err);
       } else {
         if (res && res.length === 1 && res[0].name === file.remote.basename) done(null, true);
-        else done(new Error('UNKNOWN'));
+        else done(null, false);
       }
     });
   }
