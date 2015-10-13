@@ -47,8 +47,9 @@ process.on('exit', (code) => {
 
 describe('Uploaders', () => {
 
-  let allUploaderNames = ['qiniu', 'upyun'];
-  //let allUploaderNames = ['github'];
+  let allUploaderNames;
+  allUploaderNames = ['qiniu', 'upyun'];
+  // allUploaderNames = ['ftp'];
 
   allUploaderNames.forEach(uploaderName => {
     context('#' + uploaderName, () => {
