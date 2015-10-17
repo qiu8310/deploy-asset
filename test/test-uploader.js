@@ -48,8 +48,9 @@ process.on('exit', (code) => {
 describe('Uploaders', () => {
 
   let allUploaderNames;
-  allUploaderNames = ['qiniu', 'upyun'];
-  // allUploaderNames = ['ftp'];
+
+  allUploaderNames = ['ftp', 'qiniu', 'upyun'];
+  //allUploaderNames = ['ftp'];
 
   allUploaderNames.forEach(uploaderName => {
     context('#' + uploaderName, () => {
@@ -85,8 +86,15 @@ describe('Uploaders', () => {
       });
 
       after((done) => {
-        uploader.destroyService(done);
-        if (hook.after) hook.after();
+        // 注意，如果对 ftp 单独测试，ftpServer 会在 after 执行之前就关闭了
+        // 会导致 uploader.destroyService 执行出错，所以这里分开处理
+        if (allUploaderNames.length === 1 && allUploaderNames[0] === 'ftp') {
+          if (hook.after) hook.after();
+          done();
+        } else {
+          uploader.destroyService(done);
+          if (hook.after) hook.after();
+        }
       });
 
       testUploaderFn = (uploaderFnKey, label, cb, shouldThrows = false) => {

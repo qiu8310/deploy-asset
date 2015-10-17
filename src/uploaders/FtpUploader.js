@@ -39,6 +39,7 @@ class FtpUploader extends Uploader {
     });
   }
 
+
   /**
    * @override
    * @borrows Uploader.uploadFile
@@ -61,7 +62,7 @@ class FtpUploader extends Uploader {
         else done(err);
       } else {
         if (res && res.length === 1 && res[0].name === file.remote.basename) done(null, true);
-        else done(null, false);
+        else done(new Error(JSON.stringify([err, res]))); // 未知错误，只有 err.code 是 550 才表示文件不存在
       }
     });
   }

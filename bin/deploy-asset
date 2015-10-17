@@ -121,7 +121,7 @@ if (rcConfigs.length) {
 
 
 // 合并命令行和 .darc 文件的配置
-var uploader = cliDaOpts.uploader || rcDaOpts.uploader,
+var uploader = keysExistInCLI(['uploader', 'u']) ? cliDaOpts.uploader : rcDaOpts.uploader,
   rcUploaderOpts,
   rcUploaderDaOpts;
 if (!uploader) {

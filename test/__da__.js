@@ -16,6 +16,9 @@ ftpServer.init(opts);
 
 try {
   let ftp = new FTP(opts);
+  ftp.ls('aa', (err, res) => {
+    console.log(err, res);
+  });
 } catch (e) {
   console.log(e.message);
 }
