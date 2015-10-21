@@ -56,13 +56,12 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.isRemoteFileExists
    */
   isRemoteFileExists(file, done) {
-    this.ftp.ls(this.env.getFileRemotePath(file), (err, res) => {
+    this.ftp.raw.size(this.env.getFileRemotePath(file), (err, res) => {
       if (err) {
         if (err.code === 550) done(null, false);
         else done(err);
       } else {
-        if (res && res.length === 1 && res[0].name === file.remote.basename) done(null, true);
-        else done(new Error(JSON.stringify([err, res]))); // 未知错误，只有 err.code 是 550 才表示文件不存在
+        done(null, true);
       }
     });
   }
