@@ -1,6 +1,6 @@
 # deploy-asset
 [![NPM version](https://badge.fury.io/js/deploy-asset.svg)](https://npmjs.org/package/deploy-asset)
-[![GitHub version][git-tag-image]][project-url]
+<!-- [![GitHub version][git-tag-image]][project-url]
 [![Build Status][travis-image]][travis-url]
 [![Dependency Status][daviddm-url]][daviddm-image]
 [![Inline docs][doc-image]][doc-url]
@@ -12,11 +12,11 @@
 
 [Github Repo][project-url]
 
-[JSDOC Generated Document](http://qiu8310.github.io/deploy-asset)
+[JSDOC Generated Document](http://qiu8310.github.io/deploy-asset) -->
 
 ## TODO
 
-- [ ] `da cover.js -u qiniu --destDir d/d`  指定了 destDir，也能上传到对应的目录上，但最后显示的结果却没加上 destDir
+- [x] `da cover.js -u qiniu --destDir d/d`  指定了 destDir，也能上传到对应的目录上，但最后显示的结果却没加上 destDir
        最好重写下 ServerEnv 这一块的东西
 - [ ] update-notifier - Update notifications for your CLI app.
 - [ ] uploader 可以指定在上传完后才生成远程链接，这样就强制 concurrency 为 1 了
@@ -82,10 +82,12 @@ da <folder> [options]
 ```javascript
 var da = require('deploy-asset')
 
-da(folder, globPatterns, options, function(err, fileMap) {
+da(file_or_folder, options, function(err, fileMap) {
   // ...
 })
 ```
+
+<!-- 
 
 // 查看配置参数 [https://qiu8310.github.io/deploy-asset/global.html#da](https://qiu8310.github.io/deploy-asset/global.html#da)
 
@@ -99,6 +101,8 @@ da(folder, globPatterns, options, function(err, fileMap) {
 ## Options
 
 [Click Here To See All Options](https://qiu8310.github.io/deploy-asset/global.html#da)
+ 
+-->
 
 ## 配置文件
 
@@ -208,6 +212,6 @@ Copyright (c) 2015 Zhonglei Qiu. Licensed under the MIT license.
 [coveralls-image]: https://coveralls.io/repos/qiu8310/deploy-asset/badge.png
 
 
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/qiu8310/deploy-asset/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+<!-- 
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/qiu8310/deploy-asset/trend.png)](https://bitdeli.com/free "Bitdeli Badge") -->
 
