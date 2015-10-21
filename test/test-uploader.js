@@ -50,7 +50,7 @@ describe('Uploaders', () => {
   let allUploaderNames;
 
   allUploaderNames = ['ftp', 'qiniu', 'upyun'];
-  //allUploaderNames = ['ftp'];
+  // allUploaderNames = ['ftp'];
 
   allUploaderNames.forEach(uploaderName => {
     context('#' + uploaderName, () => {

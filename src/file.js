@@ -159,6 +159,7 @@ export default class File {
       this.apply[key] = util.applyWhiteAndBlackList([relativePath], whiteList, blackList).length;
     });
 
+
     /**
      * 所有引用了此文件的 Files
      * @type {Array<File>}

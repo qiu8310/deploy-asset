@@ -10,7 +10,7 @@ import Uploader from './Uploader';
 import path from 'path';
 import fs from 'fs-extra';
 
-var FTP = require('jsftp-mkdirp')(require('jsftp-for-deploy-asset'));
+var FTP = require('ftp');
 
 class FtpUploader extends Uploader {
 
@@ -18,14 +18,27 @@ class FtpUploader extends Uploader {
    * @override
    * @borrows Uploader.initService
    */
-  initService() {
+  initService(done) {
     let opts = this.opts;
-    this.ftp = new FTP({
+    let ftp = new FTP();
+    let ended = false;
+    let cb = (err) => {
+      if (ended) return true;
+      ended = true;
+      done(err);
+    }
+
+    ftp.connect({
       host: opts.host,
       user: opts.user,
-      pass: opts.pass,
+      password: opts.pass,
       port: opts.port
     });
+
+    ftp.on('error', cb)
+    ftp.on('ready', cb);
+
+    this.ftp = ftp;
   }
 
   /**
@@ -33,10 +46,7 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.destroyService
    */
   destroyService(done) {
-    this.ftp.raw.quit((err) => {
-      if (err) this.log.error('FTP connection ended with error', err);
-      done(err);
-    });
+    this.ftp.end();
   }
 
 
@@ -45,7 +55,7 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.uploadFile
    */
   uploadFile(file, done) {
-    this.ftp.mkdirp(this.env.getFileRemoteDir(file), (err) => {
+    this.ftp.mkdir(this.env.getFileRemoteDir(file), true, err => {
       if (err) return done(err);
       this.ftp.put(file.remote.content, this.env.getFileRemotePath(file), done);
     });
@@ -56,7 +66,7 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.isRemoteFileExists
    */
   isRemoteFileExists(file, done) {
-    this.ftp.raw.size(this.env.getFileRemotePath(file), (err, res) => {
+    this.ftp.size(this.env.getFileRemotePath(file), (err, res) => {
       if (err) {
         if (err.code === 550) done(null, false);
         else done(err);
@@ -72,19 +82,12 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.getRemoteFileContent
    */
   getRemoteFileContent(file, done) {
-    let tmpFilePath = this.constructor.getLocalTmpFilePath();
-    let clear = () => fs.removeSync(tmpFilePath);
 
-    this.ftp.get(this.env.getFileRemotePath(file), tmpFilePath, err => {
-      if (!err) {
-        fs.readFile(tmpFilePath, (err, rtn) => {
-          clear();
-          done(err, rtn);
-        });
-      } else {
-        clear();
-        done(err);
-      }
+    this.ftp.get(this.env.getFileRemotePath(file), (err, stream) => {
+      if (err) return done(err);
+      let data = [];
+      stream.on('data', buffer => data.push(buffer));
+      stream.on('end', () => done(null, Buffer.concat(data)));
     });
   }
 
@@ -94,7 +97,7 @@ class FtpUploader extends Uploader {
    * @borrows Uploader.removeRemoteFile
    */
   removeRemoteFile(file, done) {
-    this.ftp.raw.dele(this.env.getFileRemotePath(file), done);
+    this.ftp.delete(this.env.getFileRemotePath(file), done);
   }
 }
 

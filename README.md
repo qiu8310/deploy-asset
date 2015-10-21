@@ -17,7 +17,8 @@
 ## TODO
 
 - [x] `da cover.js -u qiniu --destDir d/d`  指定了 destDir，也能上传到对应的目录上，但最后显示的结果却没加上 destDir
-       最好重写下 ServerEnv 这一块的东西
+- [ ] 有空了可以自己写个 ftp 模块，正好学习下 node 的 socket 编程
+- [ ] 最好重写下 ServerEnv 这一块的东西
 - [ ] update-notifier - Update notifications for your CLI app.
 - [ ] uploader 可以指定在上传完后才生成远程链接，这样就强制 concurrency 为 1 了
 - [ ] [CLI-MD](https://github.com/finnp/cli-md/blob/master/index.js)

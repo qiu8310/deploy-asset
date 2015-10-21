@@ -59,16 +59,21 @@ var groupOpts = {
 Object.keys(options).forEach(function (k) {
   if (k.indexOf('  ') === 0) return false;
   var v = argv[k];
-  var t = options[k].type;
+  var opt = options[k];
+  var t = opt.type;
+  var isPatterns = /Patterns$/.test(k);
 
   if ((k in argv) && typeof v !== 'undefined') {
     if (t === 'string' && Array.isArray(v)) {
       cliDaOpts[k] = v[v.length - 1];
-    } else if (t === 'array' && /Patterns$/.test(k)) { // 没有作用，如果没传值，不会得到空数组
+    } else if (t === 'array' && isPatterns) { // 没有作用，如果没传值，不会得到空数组
       cliDaOpts[k] = v.length === 0 ? true : v;
     } else {
       cliDaOpts[k] = v;
     }
+  } else if (isPatterns && keysExistInCLI([k].concat(opt.alias || []))) {
+    // 如果只传了一个 --nins，则此时 argv.noInspectPatterns 还是 undefined, 应该是 true
+    cliDaOpts[k] = true;
   }
 });
 

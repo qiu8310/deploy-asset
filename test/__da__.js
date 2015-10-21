@@ -1,6 +1,6 @@
 import FtpServer from 'ftp-test-server';
 
-var FTP = require('jsftp-mkdirp')(require('jsftp-for-deploy-asset'));
+var FTP = require('ftp');
 
 
 let ftpServer = new FtpServer();
@@ -8,20 +8,43 @@ let opts = {
   host: 'localhost',
   user: 'abc',
   pass: '1ksdjfk',
+  password: '1ksdjfk',
   port: 9472
 };
 
 
 ftpServer.init(opts);
 
-try {
-  let ftp = new FTP(opts);
-  ftp.ls('aa', (err, res) => {
-    console.log(err, res);
-  });
-} catch (e) {
-  console.log(e.message);
-}
+// ftpServer.on('stdout', function(data) {
+//   console.log(data.toString());
+// });
+
+// ftpServer.on('stderr', function(data) {
+//   console.log('ERROR', data.toString());
+// })
+
+let ftp = new FTP();
+
+ftp.connect(opts)
+ftp.on('error', (err) => {
+  console.log(err);
+})
+ftp.on('ready', () => {
+  // console.log('ready');
+  // ftp.mkdir('aa/aa', true, (err, res) => {
+  //   console.log('-----aa:', err);
+  // });
+  // ftp.mkdir('bb', (err, res) => {
+  //   console.log('-----bb:', err);
+  // });
+});
+
+
+
+
+
+
+
 
 
 
