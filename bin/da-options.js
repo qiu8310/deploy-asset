@@ -233,6 +233,11 @@ module.exports = {
     desc: '输出上传成功的文件到指定的 outDir （必须先指定 outDir）',
     type: 'boolean'
   },
+  map: {
+    desc: '生成本地到远程文件的映射关系，后面可以接一个文件，用于保存映射关系' +
+          '\n如果没有指定文件，则默认会使用 da-map.json' +
+          '\n另外可以指定 map.local 或 map.remote 表示只保存本地文件的路径或远程文件的路径',
+  },
 
 
 

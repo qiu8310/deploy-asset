@@ -39,6 +39,7 @@ var argv = yargs
   //.epilog('for more information, find our manual at http://example.com')
   .argv;
 
+var cwd = process.cwd();
 var rcDaOpts = require('rc')('da'); // 文件中的所有配置
 var cliDaOpts = {};   // 命令行上的所有配置
 var rawArgv = process.argv.slice(2);
@@ -166,7 +167,8 @@ if (cliUploaderOpts.alias) daOpts.uploaderName = cliUploaderOpts.alias;
 if (rcConfigs.length) ylog.verbose('配置文件和命令行两者合并后的选项：', daOpts);
 else ylog.verbose('命令行上的选项：', daOpts);
 
-da(argv._.length ? argv._ : process.cwd(), daOpts, function (err, files, opts) {
+
+da(argv._.length ? argv._ : cwd, daOpts, function (err, files, opts) {
   if (err) {
     ylog.color('red').fatal(daOpts.stack ? err : err.message);
   } else if (files.length) {
@@ -212,6 +214,8 @@ da(argv._.length ? argv._ : process.cwd(), daOpts, function (err, files, opts) {
       console.log(EOL);
     }
 
+    // 生成资源的 map 信息
+    if (opts.map) writeMap(files, opts);
   }
 });
 
@@ -277,5 +281,41 @@ function writeToLocal(file, opts) {
     fs.writeFileSync(fp, file.remote.content);
     ylog.ok.no.tag.pad(4).writeOk('成功将 ^%s^ 文件的远程文件内容写入到 ^%s^ 文件', file.relativePath, fp);
   }
+}
+
+
+function writeMap(files, opts) {
+
+  var map = opts.map;
+  var mapType = typeof opts.map !== 'object' ? 'all' : opts.map.local ? 'local' : 'remote';
+  var mapType, mapData, mapFile;
+
+  if (typeof map !== 'object') {
+    mapType = 'all';
+    mapData = {};
+    mapFile = typeof map === 'string' && map ? map : 'da-map.json';
+  } else {
+    mapType = map.local ? 'local' : 'remote';
+    mapData = [];
+    map = map[mapType];
+    mapFile = typeof map === 'string' && map ? map : 'da-map-' + mapType + '.json';
+  }
+
+  files.forEach(function (f) {
+    if (f.status.success) {
+      if (mapType === 'all') {
+        mapData[f.relativePath] = f.remote.url;
+      } else {
+        mapData.push(mapType === 'local' ? f.relativePath : f.remote.url);
+      }
+    }
+  });
+
+  mapFile = path.join(cwd, mapFile);
+  fs.ensureDirSync(path.dirname(mapFile));
+  fs.writeFileSync(mapFile, JSON.stringify(mapData, null, 4));
+  ylog.ok.no.tag.pad(4).writeOk('成功生成资源映射文件 ^%s^', mapFile);
+  console.log();
+
 }
 
