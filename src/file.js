@@ -396,10 +396,12 @@ export default class File {
       // 从 relativeDirs 中查找 assetPath
       relativeDirs.some(dir => {
         let tmpFilePath = path.join(dir, assetRelative);
-        if (path.isFileSync(tmpFilePath)) {
-          assetPath = tmpFilePath;
-          return true;
-        }
+        try {
+          if (path.isFileSync(tmpFilePath)) {
+            assetPath = tmpFilePath;
+            return true;
+          }
+        } catch (e) { return false; }
       });
 
       if (pattern.exists && !assetPath) {
