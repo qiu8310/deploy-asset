@@ -191,10 +191,10 @@ module.exports = {
     desc: '强制进行文件依赖关系的解析，找出循环依赖的地方',
     type: 'boolean'
   },
-  ignoreAll: {
-    desc: '忽略所有可以忽略的错误',
-    type: 'boolean'
-  },
+  // ignoreAll: {
+  //   desc: '忽略所有可以忽略的错误',
+  //   type: 'boolean'
+  // },
   ignoreNoneAssetError: {
     desc: '强制忽略不存在的资源文件，如果不强制忽略，会中断',
     type: 'boolean'

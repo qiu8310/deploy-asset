@@ -113,7 +113,7 @@ export default function (filePaths, opts, next) {
       err = inspectedFiles.some(f => {
         if (f.shouldSave() && !opts.outDir) {
           ylog
-            .error('没有指定 ~outDir~ 参数').ln()
+            .error('没有指定 ~--outDir~ 参数').ln()
             .error('文件 ^%s^ 指定为不要上传，但此文件包含有其它静态资源，它里面的内容会被替换', f.relativePath).ln()
             .error('所以如果不上传此文件，请指定一个输出目录，将更新后的文件输出在指定的目录内');
 

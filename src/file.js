@@ -410,7 +410,7 @@ export default class File {
         ylog[level]('文件 ^%s^ 中的静态资源 ~%s~ 无法定位到', this.relativePath, assetRelative);
 
         if (!force) {
-          ylog[level]('可以启用 ~ignoreNoneAssetError~ 来忽略此错误');
+          ylog[level]('可以启用 ~--ignoreNoneAssetError~ 来忽略此错误');
           throw new Error('NONE_ASSET');
         }
       }
@@ -505,9 +505,9 @@ export default class File {
         ylog[level].writeError('文件 ^%s^ 上传失败，远程文件 ^%s^ 已经存在', this.relativePath, this.remote.url);
 
         if (!ignore)
-          ylog[level]('你可以启用 ~ignoreExistsError~ 来忽略此错误，但不会继续上传文件')
-            .ln.log('  或者启用 ~overwrite~ 来强制覆盖远程文件')
-            .ln.log('  或者启用 ~diff~ 来和远程文件比对，如果一致则无需上传');
+          ylog[level]('你可以启用 ~--ignoreExistsError~ 来忽略此错误，但不会继续上传文件')
+            .ln.log('  或者启用 ~--overwrite~ 来强制覆盖远程文件')
+            .ln.log('  或者启用 ~--diff~ 来和远程文件比对，如果一致则无需上传');
 
         error(ignore ? null : new Error('REMOTE_FILE_EXISTS'));
 
@@ -532,8 +532,8 @@ export default class File {
           this.relativePath, this.remote.url);
 
         if (!ignore)
-          ylog[level]('你可以启用 ~ignoreConflictError~ 来忽略此错误，但不继续上传文件')
-            .ln.log('  或者关闭 ~diff~ 来忽略和远程文件的对比');
+          ylog[level]('你可以启用 ~--ignoreConflictError~ 来忽略此错误，但不继续上传文件')
+            .ln.log('  或者关闭 ~--diff~ 来忽略和远程文件的对比');
 
         error(ignore ? null : new Error('REMOTE_FILE_CONFLICT'));
 
@@ -555,7 +555,7 @@ export default class File {
       let level = ignore ? 'warn' : 'error';
       if (err) {
         ylog[level].writeError('上传文件 ^%s^ => ^%s^ 失败', this.relativePath, this.remote.url);
-        if (!ignore) ylog[level]('你可以启用 ~ignoreUploadError~ 来忽略此错误');
+        if (!ignore) ylog[level]('你可以启用 ~--ignoreUploadError~ 来忽略此错误');
 
         util.error(err, level, this.opts.stack);
         error(ignore ? null : new Error('UPLOAD_ERROR'));

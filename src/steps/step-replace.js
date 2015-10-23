@@ -66,7 +66,7 @@ export default function (files, opts, next) {
 
             ylog.color('yellow')
               .warn('发现有多个文件循环依赖于 ^%s^', dependFile).ln
-              .warn('由于开启了 ~ignoreDependsError~ ，所以此文件的 hash 值是根据本地文件的内容来计算的').ln();
+              .warn('由于开启了 ~--ignoreDependsError~ ，所以此文件的 hash 值是根据本地文件的内容来计算的').ln();
 
             File.findFileInRefs(dependFile).updateRemote();
             resetFilesDepends([dependFile]);
@@ -78,8 +78,8 @@ export default function (files, opts, next) {
           dependFile = getFilePathFromError(e);
 
           let note = retrieveRemoteUrlAfterUploaded
-            ? '文件上传后才能知道它的远程链接，所以无法启用 ~ignoreDependsError~ '
-            : '可以开启 ~ignoreDependsError~ 来忽略此错误';
+            ? '文件上传后才能知道它的远程链接，所以无法启用 ~--ignoreDependsError~ '
+            : '可以开启 ~--ignoreDependsError~ 来忽略此错误';
 
           ylog.color('red')
             .error('发现有多个文件循环依赖于 ^%s^', dependFile).ln.error(note).ln();
