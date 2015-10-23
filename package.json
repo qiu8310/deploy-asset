@@ -79,8 +79,7 @@
     }
   },
   "scripts": {
-    "lint": "cs */__*__.js *.js && cs --jsx src/**.js || echo ''",
-    "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json && echo 'code{padding: 2px 4px;font-size: 90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;}' >> ./docs/styles/jsdoc-default.css",
+    "lint": "cs */__*__.js *.js bin/*.js && cs --jsx src/**.js || echo ''",
     "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
     "build": "babel src -d build",
     "dev": "babel -w src -d build",

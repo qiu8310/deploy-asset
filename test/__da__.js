@@ -25,10 +25,10 @@ ftpServer.init(opts);
 
 let ftp = new FTP();
 
-ftp.connect(opts)
+ftp.connect(opts);
 ftp.on('error', (err) => {
   console.log(err);
-})
+});
 ftp.on('ready', () => {
   // console.log('ready');
   // ftp.mkdir('aa/aa', true, (err, res) => {

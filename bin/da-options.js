@@ -234,9 +234,9 @@ module.exports = {
     type: 'boolean'
   },
   map: {
-    desc: '生成本地到远程文件的映射关系，后面可以接一个文件，用于保存映射关系' +
-          '\n如果没有指定文件，则默认会使用 da-map.json' +
-          '\n另外可以指定 map.local 或 map.remote 表示只保存本地文件的路径或远程文件的路径',
+    desc: '生成本地到远程文件的映射关系，后面可以接一个文件，用于保存映射关系'
+          + '\n如果没有指定文件，则默认会使用 da-map.json'
+          + '\n另外可以指定 map.local 或 map.remote 表示只保存本地文件的路径或远程文件的路径',
   },
 
 
@@ -278,36 +278,36 @@ module.exports = {
   },
   minImage: {
     alias: 'mi',
-    desc: '压缩图片的配置，请使用 mi.xx 的形式配置，配置项和 min-asset 一致，下同' +
-    '\n  optimizationLevel: 0-7, 默认是 3' +
-    '\n'
+    desc: '压缩图片的配置，请使用 mi.xx 的形式配置，配置项和 min-asset 一致，下同'
+    + '\n  optimizationLevel: 0-7, 默认是 3'
+    + '\n'
   },
   minHtml: {
     alias: 'mh',
-    desc: '压缩 HTML 的配置，请使用 mh.xx 的形式配置' +
-    '\n  noCollapseWhitespace' +
-    '\n  noCollapseBooleanAttributes' +
-    '\n  noRemoveRedundantAttributes' +
-    '\n  noUseShortDoctype' +
-    '\n  noRemoveScriptTypeAttributes' +
-    '\n  noMinifyJS' +
-    '\n  noMinifyCSS' +
-    '\n'
+    desc: '压缩 HTML 的配置，请使用 mh.xx 的形式配置'
+    + '\n  noCollapseWhitespace'
+    + '\n  noCollapseBooleanAttributes'
+    + '\n  noRemoveRedundantAttributes'
+    + '\n  noUseShortDoctype'
+    + '\n  noRemoveScriptTypeAttributes'
+    + '\n  noMinifyJS'
+    + '\n  noMinifyCSS'
+    + '\n'
   },
   minCss: {
     alias: 'mc',
-    desc: '压缩 CSS 的配置，可配置项有，表使用 mc.xx 的形式配置' +
-    '\n  compatibility: ie7/ie8/*' +
-    '\n  keepSpecialComments: 0/1/*' +
-    '\n'
+    desc: '压缩 CSS 的配置，可配置项有，表使用 mc.xx 的形式配置'
+    + '\n  compatibility: ie7/ie8/*'
+    + '\n  keepSpecialComments: 0/1/*'
+    + '\n'
   },
   minJs: {
     alias: 'mj',
-    desc: '压缩 JS 的配置，可配置项有，请使用 mj.xx 的形式配置' +
-    '\n  noMangle' +
-    '\n  noDeadCode' +
-    '\n  dropConsole' +
-    '\n'
+    desc: '压缩 JS 的配置，可配置项有，请使用 mj.xx 的形式配置'
+    + '\n  noMangle'
+    + '\n  noDeadCode'
+    + '\n  dropConsole'
+    + '\n'
   },
   htmlExtensions: {
     desc: '指定 html 的后缀名',
