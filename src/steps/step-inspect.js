@@ -49,7 +49,11 @@ function _inspect(file, done) {
 
   ylog.info.title('开始检查文件 ^%s^ ...', file.relativePath);
 
-  let assets = file.insp(file.opts.inspectFilter);
+  let assets;
+
+  try {
+    assets = file.insp(file.opts.inspectFilter);
+  } catch (e) { return done(e); }
 
   assets.forEach(a => {
     ylog.verbose(`   资源 &%s-%s& : &%s&  *引用处: %s*`, a.start, a.end, a.src, a.raw);

@@ -4,7 +4,7 @@ coverage/
 npm-debug.log
 .DS_Store
 .idea
-docs/
+
 grunt-deploy-asset
 gulp-deploy-asset
 
