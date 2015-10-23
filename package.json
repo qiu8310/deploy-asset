@@ -22,12 +22,12 @@
   "keywords": [
     "deploy-asset",
     "deploy",
+    "resource",
     "da",
     "asset",
     "web",
     "web-deploy",
     "cdn",
-    "server-deploy",
     "static",
     "github",
     "ftp",

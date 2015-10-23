@@ -170,7 +170,13 @@ else ylog.verbose('命令行上的选项：', daOpts);
 
 da(argv._.length ? argv._ : cwd, daOpts, function (err, files, opts) {
   if (err) {
-    ylog.color('red').fatal(daOpts.stack ? err : err.message);
+    var errorMessage = err.message;
+    var errorCn = require('./da-errors')[errorMessage];
+
+    errorMessage += errorCn ? '   ' + errorCn : '';
+    if (opts.stack) errorMessage += '\r\n' + err.stack;
+    ylog.color('red').fatal(errorMessage);
+
   } else if (files.length) {
 
     var data = [],
