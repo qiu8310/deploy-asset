@@ -79,7 +79,7 @@
     }
   },
   "scripts": {
-    "lint": "cs */__*__.js *.js bin/*.js && cs --jsx src/**.js || echo ''",
+    "lint": "cs */__*__.js *.js bin/* && cs --jsx src/**.js || echo ''",
     "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
     "build": "babel src -d build",
     "dev": "babel -w src -d build",

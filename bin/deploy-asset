@@ -13,22 +13,22 @@ var pb = require('pretty-bytes');
 var da = require('..');
 var chalk = tw.chalk;
 
-ylog.levelFlag('silly',   -Infinity, chalk.bold.gray('[S]'));
+ylog.levelFlag('silly', -Infinity, chalk.bold.gray('[S]'));
 ylog.levelFlag('verbose', 1000, chalk.bold.blue('[V]'));
-ylog.levelFlag('debug',   2000, chalk.bold.magenta('[D]'));
-ylog.levelFlag('info',    3000, chalk.bold.cyan('[I]'));
-ylog.levelFlag('ok',      4000, chalk.bold.green(' '));
-ylog.levelFlag('warn',    5000, chalk.bold.yellow('[!]'));
-ylog.levelFlag('error',   6000, chalk.bold.red('[X]'));
-ylog.levelFlag('fatal',   7000, chalk.bold.red('XXX'));
+ylog.levelFlag('debug', 2000, chalk.bold.magenta('[D]'));
+ylog.levelFlag('info', 3000, chalk.bold.cyan('[I]'));
+ylog.levelFlag('ok', 4000, chalk.bold.green(' '));
+ylog.levelFlag('warn', 5000, chalk.bold.yellow('[!]'));
+ylog.levelFlag('error', 6000, chalk.bold.red('[X]'));
+ylog.levelFlag('fatal', 7000, chalk.bold.red('XXX'));
 
-//var argv = require('./da-completion')(yargs)
-var argv = yargs
+var argv = require('./da-completion')(yargs)
+// var argv = yargs
   .version(require('../package.json').version).alias('v', 'version')
-  .usage("$0 [选项] [文件_或_目录]")
-  //.example('$0 count -f foo.js', '# count the lines in the given file')
-  //.example('$0 count', '# count the lines in the given file')
-  //.example('$0 count -f foo.js', '# count the lines in the given file')
+  .usage('$0 [选项] [文件_或_目录]')
+  // .example('$0 count -f foo.js', '# count the lines in the given file')
+  // .example('$0 count', '# count the lines in the given file')
+  // .example('$0 count -f foo.js', '# count the lines in the given file')
   .options(options)
   .strict()
   .implies({
@@ -36,12 +36,12 @@ var argv = yargs
   })
   .help('help').alias('h', 'help')
   .showHelpOnFail(false, '请使用 --help 查看可用的选项')
-  //.epilog('for more information, find our manual at http://example.com')
+  // .epilog('for more information, find our manual at http://example.com')
   .argv;
 
 var cwd = process.cwd();
 var rcDaOpts = require('rc')('da'); // 文件中的所有配置
-var cliDaOpts = {};   // 命令行上的所有配置
+var cliDaOpts = {}; // 命令行上的所有配置
 var rawArgv = process.argv.slice(2);
 var groupOpts = {
   noRootHtml: {
@@ -288,7 +288,7 @@ function writeMap(files, opts) {
 
   var map = opts.map;
   var mapType = typeof opts.map !== 'object' ? 'all' : opts.map.local ? 'local' : 'remote';
-  var mapType, mapData, mapFile;
+  var mapData, mapFile;
 
   if (typeof map !== 'object') {
     mapType = 'all';
