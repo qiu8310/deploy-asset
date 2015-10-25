@@ -4,7 +4,7 @@
 ### 安装
 
 ```
-npm install -g deploy-asset
+npm install -g deploy-asset@next
 ```
 
 ### 使用
@@ -117,10 +117,10 @@ npm install -g deploy-asset
 * 【上传单个图片文件】单独上传某一张图片到七牛上
 
   ```bash
-  da /path/to/image_file --u qiniu
+  da /path/to/image_file -u qiniu
   ```
 
-* 【上传多个图片文件】将当前文件夹下的所有 png 图片传到又拍去上
+* 【上传多个图片文件】将当前文件夹下的所有 png 图片传到又拍云上
 
   ```bash
   da *.png -u upyun
@@ -149,7 +149,7 @@ npm install -g deploy-asset
   da /project/dist -u ftp
   ```
 
-  不仅文件夹会上传，文件之间的引用关系也会更新
+  不仅文件夹会上传，文件之间的引用关系也会更新，如果不想更新引用关系，可以添加 `--nins`
 
 * 【不上传 html】上传 /project/dist 项目下 html 中引用到的文件，但不上传 html
 

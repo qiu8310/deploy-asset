@@ -3,7 +3,7 @@
 ### 安装
 
 ```
-npm install --save-dev deploy-asset
+npm install --save-dev deploy-asset@next
 ```
 
 ### 使用
@@ -28,8 +28,8 @@ da(files_or_directory, options, function (err, files, opts) {
 
 ```
 
-* 关于 options 配置可以[查看这里](../src/da.js#L18-L108)
-* 关于 File 对象可以[查看这里](../src/file.js)
+* 关于 options 配置可以 [查看这里](../src/da.js#L18-L108)
+* 关于 File 对象可以 [查看这里](../src/file.js)
 
 
-[《使用 deploy-asset 的 CLI](./Use_CLI.md)
+[《使用 deploy-asset 的 CLI》](./Use_CLI.md)
