@@ -1,20 +1,32 @@
 {
   "name": "deploy-asset",
-  "description": "Analyze web files and deploy them to CDN making them accessible.",
+  "description": "对前端静态资源 Compress, Revisioning 以及 Uploading",
   "version": "1.1.0-alpha.1",
   "homepage": "https://github.com/qiu8310/deploy-asset",
   "bugs": "https://github.com/qiu8310/deploy-asset/issues",
   "license": "MIT",
   "main": "build/da.js",
-  "author": {
-    "name": "Zhonglei Qiu",
-    "email": "qiuzhongleiabc@126.com"
-  },
   "files": [
     "bin/",
     "README.md",
     "build/"
   ],
+  "bin": {
+    "deploy-asset": "bin/deploy-asset",
+    "da": "bin/deploy-asset"
+  },
+  "scripts": {
+    "lint": "cs */__*__.js *.js bin/* && cs --jsx src/**.js || echo ''",
+    "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
+    "build": "babel src -d build",
+    "dev": "babel -w src -d build",
+    "cover": "rm -rf ./coverage && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec -t 10000 --compilers js:babel/register test/test-*",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+  },
+  "author": {
+    "name": "Zhonglei Qiu",
+    "email": "qiuzhongleiabc@126.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/qiu8310/deploy-asset"
@@ -25,10 +37,23 @@
     "resource",
     "da",
     "asset",
+    "assets",
+    "revving",
+    "expire",
     "web",
     "web-deploy",
     "cdn",
     "static",
+    "rev",
+    "revisioning",
+    "hash",
+    "optimize",
+    "upload",
+    "uploading",
+    "uploader",
+    "min",
+    "compress",
+    "minify",
     "github",
     "ftp",
     "qiniu",
@@ -68,22 +93,10 @@
     "mocha-lcov-reporter": "^1.0.0",
     "should": "^7.1.0"
   },
-  "bin": {
-    "deploy-asset": "bin/deploy-asset",
-    "da": "bin/deploy-asset"
-  },
   "eslintConfig": {
     "env": {
       "node": true,
       "mocha": true
     }
-  },
-  "scripts": {
-    "lint": "cs */__*__.js *.js bin/* && cs --jsx src/**.js || echo ''",
-    "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
-    "build": "babel src -d build",
-    "dev": "babel -w src -d build",
-    "cover": "rm -rf ./coverage && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./cover.js",
-    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   }
 }

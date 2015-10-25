@@ -32,10 +32,10 @@ class GithubUploader extends Uploader {
       opts.domain = 'deploy-asset.github.io';
       opts.repo = 'deploy-asset.github.io';
       opts.branch = 'master';
-      opts.auth = 'oauth';
-      opts.token = '96d39d8e37c373a63fe4bb58ea6e14ddd16a4bad';
+      opts.auth = 'basic';
+      opts.token = '';
       opts.user = 'deploy-asset';
-      opts.pass = '';
+      opts.pass = '5Rq-LLt-HRt-7Jr';
 
     } else {
       if (opts.auth === 'oauth') {
