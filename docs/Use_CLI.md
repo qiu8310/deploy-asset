@@ -1,173 +1,184 @@
 ## 使用 deploy-asset 的 CLI
 
-## .darc
 
-## 调试
+### 安装
 
-
-## 安装
-
-```bash
-npm install --global deploy-asset
+```
+npm install -g deploy-asset
 ```
 
-## 使用
+### 使用
 
-### 命令行
-
-```bash
-
-da <folder> [options]
-
-```  
-
-**请使用 `da --help` 来查看所有支持的配置**
+**请使用 `da -h` 查看所有支持的选项**
 
 
-#### 使用命令行的例子：（要先配置好 uploaders）
+### darc 配置文件
 
-* 发布一个单独的图片文件到七牛上去
+配置文件使用的库是 [rc](https://github.com/dominictarr/rc)，它会自动在你项目所在的目录及各级父目录和当前用户根目录下查找 `.darc` 文件，查找过程如下：
 
-  `da path/to/example.png --uploader qiniu`
+```
+-> 当前文件夹下查找 .darc
+-> 当前文件的父目录查找 .darc
+-> 当前文件的父目录的父目录查找 .darc
+-> ...
+-> 磁盘根目录下查找 .darc
+-> 用户根目录下查找 .darc
 
-* 发布当前目录下所有的 png 图片
-
-  `da "*.png"`  注意如果使用了通配符，一定要加上引号，否则很容易出错
-
-* 发布当前目录下的 index.html 文件
-
-  如果 index.html 引用了 app.js 和 app.css，而 app.css 引用了 hero.png 图片，即它们关系是
-    ```
-    index.html
-      | -- scripts
-            | -- app.js
-      | -- styles
-            | -- app.css
-      | -- images
-            | -- hero.png
-    ```
-
-  在这种情况下，你还是只需要执行 `da index.html`，它会自动找到文件的引用关系，将它们上传到服务器，并根据服务器的路径，修改它们的引用关系    
-
-  执行后的结果可能是：
-    ```
-    ✓         index.html => http://7u2rjq.com1.z0.glb.clouddn.com/index-d85f46.html
-    ✓     scripts/app.js => http://7u2rjq.com1.z0.glb.clouddn.com/app-2bd0f1.js
-    ✓     styles/app.css => http://7u2rjq.com1.z0.glb.clouddn.com/app-d41d8c.css
-    ✓    images/hero.png => http://7u2rjq.com1.z0.glb.clouddn.com/hero-d41d8c.png
-    ```
-
-
-### Node 脚本
-
-```javascript
-var da = require('deploy-asset')
-
-da(file_or_folder, options, function(err, fileMap) {
-  // ...
-})
+最后 => 将所有找到的文件深度 merge，最先找到的配置会覆盖后面找到的
 ```
 
-<!-- 
 
-// 查看配置参数 [https://qiu8310.github.io/deploy-asset/global.html#da](https://qiu8310.github.io/deploy-asset/global.html#da)
+配置文件中可以使用的选项和 `da -h` 上看到的选项是一致的，不过在配置文件中，可以对 uploader 进行分组
+配置。
 
+**比如我有两个 ftp 帐号，可以这样配置：**
 
-### Grunt
-
-[grunt-deploy-asset](https://github.com/qiu8310/grunt-deploy-asset)
-
-
-
-## Options
-
-[Click Here To See All Options](https://qiu8310.github.io/deploy-asset/global.html#da)
- 
--->
-
-## 配置文件
-
-* 配置文件使用的库是 [rc](https://github.com/dominictarr/rc)，它会自动在你项目所在的目录及各级父目录和当前用户根目录下查找 `.darc` 文件，将所有找到的文件合并（最先找到的会覆盖后面找到的）。
-
-* 此项目主要需要配置的选项是 `uploaders`，其它都可以通过命令行配置，下面是一个 ftp 的配置例子：
-
-  在你的用户根目录新建一个 `.darc` 文件，并填入下面代码（注意去掉代码中的注释）
-  ```json
-  {
-    "uploader": "ftp_stage",  // 默认的 上传器
-    "uploaders": {
-      "ftp_stage": {
-        "alias": "ftp",   // 这个一定要写，告诉系统这是个 ftp 的配置
-        "host": "....",
-        "user": "...",
-        "pass": "...",
-        "port": 21,
-        "baseUrl": "http://www.you_server/welcome/abc", // 这里只是个例子，根据你的实际情况修改
-        "destDir": "welcome/abc"
-      },
-      "ftp_prod": {
-        "alias": "ftp", 
-        "host": "....",
-        "user": "...",
-        "pass": "...",
-        "port": 21,
-        "baseUrl": "...",
-        "destDir": "..."
-      }
+```json
+{
+  "uploader": "ftp_stage",
+  "uploaders": {
+    "ftp_stage": {
+      "alias": "ftp",
+      "host": "....",
+      "user": "...",
+      "pass": "...",
+      "port": 21,
+      "baseUrl": "http://www.you_server",
+      "destDir": "welcome/abc"
+    },
+    "ftp_prod": {
+      "alias": "ftp", 
+      "host": "....",
+      "user": "...",
+      "pass": "...",
+      "port": 21,
+      "baseUrl": "...",
+      "destDir": "..."
     }
   }
+}
+```
+
+然后只需要使用 `da` 就会默认使用 ftp_stage 所指定的这个 ftp uploader 的配置；
+而如果使用 `da -u ftp_prod` 则会使用 ftp_prod 所指定的这个 ftp uploader 的配置。
+
+
+**除了支持 ftp 外，还支持 qiniu, upyun 和 github，它们的配置项如下所求：**
+
+```json
+{
+  "uploaders": {
+    "ftp": {
+      "host": "....",
+      "user": "...",
+      "pass": "...",
+      "port": 21
+    },
+
+    "qiniu": {
+      "ak": "七牛 Access Key",
+      "sk": "七牛 Secret Key",
+      "bucket": "七牛 空间",
+      "domain": "七牛 当前空间的域名"
+    },
+
+    "upyun": {
+      "operator": "又拍云 操作员",
+      "password": "又拍云 操作员密码",
+      "bucket": "又拍云 空间",
+      "domain": "又拍云 当前空间的域名",
+      "endpoint": "v0",
+      "apiVersion": "legacy"
+    },
+
+    "github": {
+      "auth": "Github 的认证方式(basic/oauth)",
+      "user": "Github 用户名",
+      "pass": "Github 用户密码",
+      "token": "Github 的 oauth token",
+      "domain": "Github 的域名",
+      "repo": "Git 创库名称",
+      "branch": "Git 的分支"
+    }
+  }
+}
+
+```
+
+所有的 uploader 配置都支持指定 `destDir`, `appendDestDirToBaseUrl`, `domain`/`baseUrl` 或 `options`。
+
+其中，如果指定了 `options`，则它内部配置的选项会覆盖最外层的配置，其它三项涵义请使用 `da -h` 查看。
+
+
+### 举例
+
+> 前提是已经使用 .darc 文件配置好了所有的支持的 uploader
+
+* 【上传单个图片文件】单独上传某一张图片到七牛上
+
+  ```bash
+  da /path/to/image_file --u qiniu
   ```
-  这样配置好了之后你就可以使用 `da .` 来将文件发布到 stage 的 ftp 上，而运行 `da . --uploader ftp_prod` 来将文件发布到 production 环境上去。
 
+* 【上传多个图片文件】将当前文件夹下的所有 png 图片传到又拍去上
 
-* 另外支持的 七牛 和 又拍云的配置格式如下（可以将所有相关的配置都放在 `uploaders` 中，这里是为了说明才分开说的）：
-
-  ```json
-  {
-    "uploaders": {
-      "qiniu": {
-        "alias": "qiniu",  // 如果 alias 的值，和它对应在 uploaders 下的 key 的值一样（此处都是 qiniu），则可忽略 alias
-        "ak": "...",
-        "sk": "...",
-        "domain": "...",
-        "bucket": "..."
-      },
-      "upyun": {
-        "operator": "...",
-        "password": "...",
-        "bucket": "...",
-        "domain": "...",
-        "destDir": "",  // 可以不填，默认就会上传到 bucket 的根目录下
-        "endpoint": "", // 可以不填，默认是 v0
-        "apiVersion": "" // 可以不填，默认是 legacy
-      }
-    }
-  }
+  ```bash
+  da *.png -u upyun
   ```
 
 
+* 【上传一个 HTML 文件】将 index.html 上传到七牛上
 
-## 注意事项
+  ```bash
+  da index.html -u qiniu
+  ```
 
-* 如果在 JS 或 JSON 中要引用某个文件，只要将它放在字符串中，保证带有至少一个路径（`/` 或 `\`），并且有后缀名，如 `.js`
+  这样的话，如果 index.html 中引用了其它文件，都会被上传上去，可以保证你上传后访问的文件是完全正常的。
 
-* __使用命令行时如果用了 glob，一定要加引号__ 
+* 【只上传一个 HTML 文件】将 index.html 上传到七牛，但此文件中依赖的文件不需要上传
+  
+  ```bash
+  da index.html -u qiniu --nins index.html
+  ```
 
-  比如，如果你想排除所有图片文件用此命令：`da --excludes *.png`，但 *.png 会被 shell 解析成可能的 a.png b.png c.png，所以你的命令变成了：
-  `da --excludes a.png b.png c.png` 并不是你想要的结果。因而，需要加上引号写成 `da --excludes '*.png'`
+  这样设定的话，不会对 index.html 进行 inspect 步骤，即不会去查找它内部的依赖。
+
+* 【上传一个文件夹】将 /project 目录下的 dist 目录部署到到 ftp 上
+
+  ```bash
+  da /project/dist -u ftp
+  ```
+
+  不仅文件夹会上传，文件之间的引用关系也会更新
+
+* 【不上传 html】上传 /project/dist 项目下 html 中引用到的文件，但不上传 html
+
+  ```bash
+  da /project/dist/**/*.html --abs "**/*.html" --nupl "**/*.html" --outDir out
+
+  # 或者使用快捷命令
+
+  da /project/dist/**/*.html --noAllHtml
+  ```
 
 
-## 调试
 
-使用的是 [npmlog](https://github.com/isaacs/npmlog)，支持 6 种不同的日志级别，
+### 调试
+
+使用的是 [ylog](https://github.com/qiu8310/ylog)，支持下面几种不同的日志级别，
 分别是： `silly`， `verbose`， `info`， `warn`， `error`， `silent`，越后面的
 输出的日志信息就越少。
 
-可以通过以下两种方式来设置日志级别：
 
-* 通过参数： `--log-level` 或 `-l`，如 `--log-level=verbose` 或 `-l verbose`，
-  另外支持三种简写形式，`--verbose`，`--info`，`--silent`
+通过参数来设置不同的日志级别： `--logLovel` 或 `-l`，如 `--logLevel=verbose` 或 `-l verbose`，
+另外支持简写形式，`--verbose`，`--silent`, `-d`, `-dd`, `-ddd`。
 
-* 通过环境变量：类似于 [debug](https://github.com/visionmedia/debug) 的写法，如
-  `DEBUG=da:verbose` 或 `DEBUG=da:info`
+另外，如果程序出错时，默认只会显示 error.messsage 信息，不会显示 error.stack 信息，可以指定参数 `--stack`
+来使程序在出错时输出 error.stack 的详细信息。
+
+
+
+[《使用 deploy-asset 的 API》](./Use_API.md)
+
+
 

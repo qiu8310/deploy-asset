@@ -1,1 +1,36 @@
-{}
+{
+  "uploaders": {
+    "ftp": {
+      "host": "....",
+      "user": "...",
+      "pass": "...",
+      "port": 21
+    },
+
+    "qiniu": {
+      "ak": "七牛 Access Key",
+      "sk": "七牛 Secret Key",
+      "bucket": "七牛 空间",
+      "domain": "七牛 当前空间的域名"
+    },
+
+    "upyun": {
+      "operator": "又拍云 操作员",
+      "password": "又拍云 操作员密码",
+      "bucket": "又拍云 空间",
+      "domain": "又拍云 当前空间的域名",
+      "endpoint": "v0",
+      "apiVersion": "legacy"
+    },
+
+    "github": {
+      "auth": "Github 的认证方式(basic/oauth)",
+      "user": "Github 用户名",
+      "pass": "Github 用户密码",
+      "token": "Github 的 oauth token",
+      "domain": "Github 的域名",
+      "repo": "Git 创库名称",
+      "branch": "Git 的分支"
+    }
+  }
+}
