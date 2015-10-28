@@ -70,6 +70,9 @@ function _filterOutOpts(opts) {
  * @param {function} next
  */
 export default function (any, opts, next) {
+  // 命令行传过来的一定是个数组
+  // 但有时可能会直接传进一个文件夹来，同时希望此文件夹为根目录
+  if (Array.isArray(any) && any.length === 1) any = any[0];
 
   try {
 

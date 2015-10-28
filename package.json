@@ -9,6 +9,7 @@
   "files": [
     "bin/",
     "README.md",
+    "docs/",
     "build/"
   ],
   "bin": {
@@ -16,9 +17,9 @@
     "da": "bin/deploy-asset"
   },
   "scripts": {
-    "lint": "cs */__*__.js *.js bin/* && cs --jsx src/**.js || echo ''",
+    "lint": "check-style */__*__.js *.js bin/* && check-style --jsx src/**.js || echo ''",
     "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
-    "build": "babel src -d build",
+    "build": "rm -rf build && babel src -d build",
     "dev": "babel -w src -d build",
     "cover": "rm -rf ./coverage && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec -t 10000 --compilers js:babel/register test/test-*",
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec -t 10000 --compilers js:babel/register test/test-* && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
