@@ -497,9 +497,9 @@ export default class File {
 
       this.status.exists = exists;
 
-      if (exists) {
-        if (isDiff) return success();
+      if (isDiff) return success();
 
+      if (exists) {
         let ignore = this.opts.ignoreExistsError;
         let level = ignore ? 'warn' : 'error';
         ylog[level].writeError('文件 ^%s^ 上传失败，远程文件 ^%s^ 已经存在', this.relativePath, this.remote.url);
@@ -510,10 +510,7 @@ export default class File {
             .ln.log('  或者启用 ~--diff~ 来和远程文件比对，如果一致则无需上传');
 
         error(ignore ? null : new Error('REMOTE_FILE_EXISTS'));
-
       } else {
-        if (isDiff) return error();
-
         success();
       }
     });
@@ -577,10 +574,17 @@ export default class File {
       this._judgeUploaded(uploader, callback, callback);
     } else if (diff) {
       this._judgeExists(uploader, callback, () => {
-        this._judgeConflict(uploader, callback, () => {
-          this.status.success = true; // 文件一样，就不需要上传了
-          callback();
-        });
+
+        // 远程文件存在
+        if (this.status.exists) {
+          this._judgeConflict(uploader, callback, () => {
+            this.status.success = true; // 文件一样，就不需要上传了
+            callback();
+          });
+        } else {
+          this._judgeUploaded(uploader, callback, callback);
+        }
+
       }, diff);
     } else {
       throw new Error('OVERWRITE_DIFF_CONFLICT');
