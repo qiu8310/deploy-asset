@@ -4,7 +4,7 @@
 ### 安装
 
 ```
-npm install -g deploy-asset@next
+npm install -g deploy-asset
 ```
 
 ### 使用

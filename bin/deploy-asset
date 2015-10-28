@@ -188,29 +188,32 @@ da(argv._.length ? argv._ : cwd, daOpts, function (err, files, opts) {
       data.push(genFileTableRow(f, opts));
     });
 
-    console.log(EOL);
-    tw.table(
-      data,
-      {
-        left: 4,
-        right: 10,
-        console: true,
+    if (opts.result) {
+      console.log(EOL);
+      tw.table(
+        data,
+        {
+          left: 4,
+          right: 10,
+          console: true,
 
-        showHead: true
-      },
-      {
-        head: {
-          color: 'bold',
-          paddingBottom: 1
+          showHead: true
         },
-        colB: { align: 'center' },
-        colC: { align: 'center' },
-        cellAD: { align: 'center' },
-        colD: { align: 'right' },
-        colE: { align: 'center' }
-      }
-    );
-    console.log(EOL);
+        {
+          head: {
+            color: 'bold',
+            paddingBottom: 1
+          },
+          colB: { align: 'center' },
+          colC: { align: 'center' },
+          cellAD: { align: 'center' },
+          colD: { align: 'right' },
+          colE: { align: 'center' }
+        }
+      );
+      console.log(EOL);
+    }
+
 
     if (opts.outDir) {
       fs.ensureDirSync(opts.outDir);
@@ -309,6 +312,9 @@ function writeMap(files, opts) {
 
   files.forEach(function (f) {
     if (f.status.success) {
+
+      var relativePath = f.relativePath.replace(/\\/g, '/');
+
       if (mapType === 'all') {
         mapData[f.relativePath] = f.remote.url;
       } else {

@@ -3,7 +3,7 @@
 ### 安装
 
 ```
-npm install --save-dev deploy-asset@next
+npm install --save-dev deploy-asset
 ```
 
 ### 使用
