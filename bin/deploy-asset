@@ -312,13 +312,11 @@ function writeMap(files, opts) {
 
   files.forEach(function (f) {
     if (f.status.success) {
-
       var relativePath = f.relativePath.replace(/\\/g, '/');
-
       if (mapType === 'all') {
-        mapData[f.relativePath] = f.remote.url;
+        mapData[relativePath] = f.remote.url;
       } else {
-        mapData.push(mapType === 'local' ? f.relativePath : f.remote.url);
+        mapData.push(mapType === 'local' ? relativePath : f.remote.url);
       }
     }
   });
