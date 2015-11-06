@@ -37,12 +37,18 @@ module.exports = {
     'default': true
   },
   prefix: {
+    alias: 'p',
     desc: '指定远程文件名称的前缀',
     type: 'string'
   },
   suffix: {
-    desc: '指定远程文件名称的后缀',
-    type: 'string'
+    alias: 's',
+    desc: '指定远程文件名称的后缀\n'
+      + '可以指定 s.date 来加一个时间戳的后缀，使用 moment 的格式，默认是 "-YYYY-MM-DD"\n'
+      + '也可以指定 s.version 来加一个版本号的后缀，使用当前 package.json 中的 version，默认是 "-V"\n'
+      + '另外还有 s.before, s.after，最后的结果是 {before}{version}{date}{after}',
+    type: 'string',
+    requiresArg: true
   },
   hash: {
     desc: '指定远程文件名的 hash 的长度 (0-32)',
@@ -179,7 +185,7 @@ module.exports = {
   },
 
   runToStep: {
-    alias: ['step', 's'],
+    alias: ['step'],
     desc: '要运行到的步骤',
     choices: ['init', 'inspect', 'minify', 'replace', 'upload'],
     type: 'string',

@@ -8,10 +8,8 @@ sudo: false
 #    - master
 
 node_js:
-  - "iojs"
-  - "iojs-v1.0"
+  - "latest"
   - "0.12"
-  - "0.11"
   - "0.10"
 after_script:
   - npm run coveralls

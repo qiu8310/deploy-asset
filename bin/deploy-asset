@@ -39,6 +39,8 @@ var argv = require('./da-completion')(yargs)
   // .epilog('for more information, find our manual at http://example.com')
   .argv;
 
+
+
 var cwd = process.cwd();
 var rcDaOpts = require('rc')('da'); // 文件中的所有配置
 var cliDaOpts = {}; // 命令行上的所有配置
@@ -77,6 +79,30 @@ Object.keys(options).forEach(function (k) {
     cliDaOpts[k] = true;
   }
 });
+
+
+// 处理 suffix
+if (cliDaOpts.suffix && typeof cliDaOpts.suffix !== 'string') {
+  var suffix = cliDaOpts.suffix;
+  var before = suffix.before || '';
+  var after = suffix.after || '';
+  var version = suffix.version === true ? '-V' : (suffix.version || '');
+  var date = suffix.date === true ? '-YYYY-MM-DD' : (suffix.date || '');
+
+  if (version) {
+    var versionFile = require('look-up')('package.json');
+    if (!versionFile) {
+      ylog.error('没有找到 package.json 文件，无法获取版本号');
+      throw new Error('NO_PACKAGE_FILE');
+    }
+    version = version.replace('V', require(path.resolve(versionFile)).version);
+  }
+  if (date) {
+    date = require('moment')().format(date);
+  }
+  cliDaOpts.suffix = before + version + date + after;
+}
+
 
 var cliUploaderOpts = cliDaOpts.uploaderOpts || {};
 if (typeof cliUploaderOpts === 'string') {
@@ -178,6 +204,9 @@ da(argv._.length ? argv._ : cwd, daOpts, function (err, files, opts) {
     ylog.color('red').fatal(errorMessage);
 
   } else if (files.length) {
+
+    // 只执行 init， 数据量太少，输不出表格
+    if (opts.runToStep === 'init') return true;
 
     var data = [],
       sortMap = {html: 1, js: 2, css: 3, json: 4};
