@@ -81,29 +81,6 @@ Object.keys(options).forEach(function (k) {
 });
 
 
-// 处理 suffix
-if (cliDaOpts.suffix && typeof cliDaOpts.suffix !== 'string') {
-  var suffix = cliDaOpts.suffix;
-  var before = suffix.before || '';
-  var after = suffix.after || '';
-  var version = suffix.version === true ? '-V' : (suffix.version || '');
-  var date = suffix.date === true ? '-YYYY-MM-DD' : (suffix.date || '');
-
-  if (version) {
-    var versionFile = require('look-up')('package.json');
-    if (!versionFile) {
-      ylog.error('没有找到 package.json 文件，无法获取版本号');
-      throw new Error('NO_PACKAGE_FILE');
-    }
-    version = version.replace('V', require(path.resolve(versionFile)).version);
-  }
-  if (date) {
-    date = require('moment')().format(date);
-  }
-  cliDaOpts.suffix = before + version + date + after;
-}
-
-
 var cliUploaderOpts = cliDaOpts.uploaderOpts || {};
 if (typeof cliUploaderOpts === 'string') {
   try {
@@ -183,6 +160,30 @@ Object.keys(options).forEach(function (key) {
     cliDaOpts[key] = rcDaOpts[key];
   }
 });
+
+
+// 处理 suffix
+if (cliDaOpts.suffix && typeof cliDaOpts.suffix !== 'string') {
+  var suffix = cliDaOpts.suffix;
+  var before = suffix.before || '';
+  var after = suffix.after || '';
+  var version = suffix.version === true ? '-V' : (suffix.version || '');
+  var date = suffix.date === true ? '-YYYY-MM-DD' : (suffix.date || '');
+
+  if (version) {
+    var versionFile = require('look-up')('package.json');
+    if (!versionFile) {
+      ylog.error('没有找到 package.json 文件，无法获取版本号');
+      throw new Error('NO_PACKAGE_FILE');
+    }
+    version = version.replace('V', require(path.resolve(versionFile)).version);
+  }
+  if (date) {
+    date = require('moment')().format(date);
+  }
+  cliDaOpts.suffix = before + version + date + after;
+}
+
 
 var daOpts = cliDaOpts;
 daOpts.uploaderName = daOpts.uploader;
