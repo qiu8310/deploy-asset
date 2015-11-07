@@ -320,6 +320,9 @@ module.exports = {
     + '\n  dropConsole'
     + '\n'
   },
+  minJson: {
+    desc: '压缩 JSON 文件'
+  },
   htmlExtensions: {
     desc: '指定 html 的后缀名',
     requiresArg: true,

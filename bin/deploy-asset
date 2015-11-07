@@ -152,8 +152,10 @@ Object.keys(options).forEach(function (key) {
   var keys = opt.alias ? [].concat(opt.alias, key) : [key];
 
   // 合并配置文件和命令行上的选项
-  if (['minHtml', 'minCss', 'minImage', 'minJs'].indexOf(key) >= 0) {
-    cliDaOpts[key] = _.assign({}, rcDaOpts[key], cliDaOpts[key]);
+  if (['minHtml', 'minCss', 'minImage', 'minJs', 'minJson'].indexOf(key) >= 0) {
+    if (key in cliDaOpts && cliDaOpts[key] === false) cliDaOpts[key] = false;
+    else if (!(key in cliDaOpts) && rcDaOpts[key] === false) cliDaOpts[key] = false;
+    else cliDaOpts[key] = _.assign({}, rcDaOpts[key], cliDaOpts[key]);
 
     // 如果配置文件中有指定，但命令行上没有指定，则使用配置文件中的
   } else if ((key in rcDaOpts) && !keysExistInCLI(keys)) {

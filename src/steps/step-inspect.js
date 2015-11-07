@@ -18,8 +18,10 @@ function _getMinFileType(file) {
 
 function _compress(file, done) {
   let type = _getMinFileType(file);
-  let minOpts = file.opts['min' + _.capitalize(type)] || {};
-  if (!type) return done(null, file);
+  let minOpts = file.opts['min' + _.capitalize(type)];
+  if (!type || minOpts === false) return done(null, file);
+
+  minOpts = minOpts || {};
 
   ylog.info.title('开始压缩文件 ^%s^ ...', file.relativePath);
   min(file.content, type, minOpts, (err, data) => {
