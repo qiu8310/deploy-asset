@@ -197,7 +197,7 @@ if (rcConfigs.length) ylog.verbose('配置文件和命令行两者合并后的�
 else ylog.verbose('命令行上的选项：', daOpts);
 
 
-da(argv._.length ? argv._ : cwd, daOpts, function (err, files, opts) {
+da(argv._.length ? argv._ : (daOpts.rootDir ? daOpts.rootDir : cwd), daOpts, function (err, files, opts) {
   if (err) {
     var errorMessage = err.message;
     var errorCn = require('./da-errors')[errorMessage];
