@@ -280,9 +280,9 @@ export default class File {
     if (typeof rename === 'function') {
       name = rename(this, map);
     } else {
-      name = rename.replace(/\{(\w+)\}/g, (raw, k) => {
+      name = rename.replace(/\{(\w+)(?:\:(\d+))?\}/g, (raw, k, len) => {
         k = _.find(keys, key => key.indexOf(k) === 0);
-        return k ? map[k] : raw;
+        return k ? (len ? map[k].substr(0, len) : map[k]) : raw;
       });
     }
 
