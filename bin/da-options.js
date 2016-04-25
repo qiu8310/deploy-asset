@@ -248,8 +248,8 @@ module.exports = {
     desc: '生成本地到远程文件的映射关系，后面可以接一个文件，用于保存映射关系'
           + '\n如果没有指定文件，则默认会使用 da-map.json'
           + '\n另外可以指定 map.local 或 map.remote 表示是否只在 da-map.json 文件中保存本地或远程文件'
-          + '\n指定 map.entry 可以使得 da-map.json 文件只保存入口文件',
-          + '\n指定 map.noDomain 可以使得 da-map.json 文件不记录远程文件路径的域名',
+          + '\n指定 map.entry 可以使得 da-map.json 文件只保存入口文件'
+          + '\n指定 map.noDomain 可以使得 da-map.json 文件不记录远程文件路径的域名'
           + '\n如果 map 是 Object，可以指定 map.file 来指定保存的文件名称',
   },
 
