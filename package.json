@@ -18,7 +18,7 @@
   },
   "scripts": {
     "lint": "check-style */__*__.js *.js bin/* && check-style --jsx src/**.js || echo ''",
-    "test": "mocha -t 2000 --compilers js:babel/register test/test-*",
+    "test": "mocha -t 4000 --compilers js:babel/register test/test-*",
     "build": "rm -rf build && babel src -d build",
     "dev": "babel -w src -d build",
     "cover": "rm -rf ./coverage && istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec -t 10000 --compilers js:babel/register test/test-*",

@@ -328,27 +328,29 @@ function writeToLocal(file, opts) {
 function writeMap(files, opts) {
 
   var map = opts.map;
-  var mapType = typeof opts.map !== 'object' ? 'all' : opts.map.local ? 'local' : 'remote';
-  var mapData, mapFile;
+  var mapData, mapFile, mapType, mapEntry, mapNoDomain;
 
-  if (typeof map !== 'object') {
-    mapType = 'all';
-    mapData = {};
-    mapFile = typeof map === 'string' && map ? map : 'da-map.json';
-  } else {
-    mapType = map.local ? 'local' : 'remote';
-    mapData = [];
-    map = map[mapType];
-    mapFile = typeof map === 'string' && map ? map : 'da-map-' + mapType + '.json';
+  if (!map) {
+    map = { file: 'da-map.json' };
+  } else if (typeof map === 'string') {
+    map = { file: map };
   }
 
+  mapType = map.local ? 'local' : (map.remote ? 'remote' : 'all');
+  mapEntry = map.entry;
+  mapNoDomain = map.noDomain;
+  mapFile = map.file || 'da-map-' + mapType + '.json';
+  mapData = mapType === 'all' ? {} : [];
+
+
   files.forEach(function (f) {
-    if (f.status.success) {
+    if (f.status.success && (!mapEntry || !f.callers.length)) {
       var relativePath = f.relativePath.replace(/\\/g, '/');
+      var remoteUrl = mapNoDomain ? stripUrlDomain(f.remote.url) : f.remote.url;
       if (mapType === 'all') {
-        mapData[relativePath] = f.remote.url;
+        mapData[relativePath] = remoteUrl;
       } else {
-        mapData.push(mapType === 'local' ? relativePath : f.remote.url);
+        mapData.push(mapType === 'local' ? relativePath : remoteUrl);
       }
     }
   });
@@ -358,6 +360,9 @@ function writeMap(files, opts) {
   fs.writeFileSync(mapFile, JSON.stringify(mapData, null, 4));
   ylog.ok.no.tag.pad(4).writeOk('成功生成资源映射文件 ^%s^', mapFile);
   console.log();
+}
 
+function stripUrlDomain(url) {
+  return url.replace(/^(\w+:)?\/\/[^/]+/, '');
 }
 

@@ -24,13 +24,13 @@ let hooks = {
       host: 'localhost',
       user: 'abc',
       pass: '1ksdjfk',
-      port: 9472
+      port: 9473
     },
     before() {
       console.log('      在本地启动 ftp 服务器');
       ftpServer = new FtpServer();
-      //ftpServer.on('stdout', data => ylog.fatal('ftp server', data));
-      //ftpServer.on('stderr', data => console.log('ftp server', data.toString()));
+      // ftpServer.on('stdout', data => ylog.fatal('ftp server', data));
+      // ftpServer.on('stderr', data => console.log('ftp server', data.toString()));
       ftpServer.init(this.uploaderOpts);
     },
     after() {
@@ -82,7 +82,14 @@ describe('Uploaders', () => {
 
         testFiles = uploaderName === 'github' ? [txtFile] : [txtFile, imgFile];
 
-        uploader.initService(done);
+        if (uploaderName === 'ftp') { // wait for ftp start
+          setTimeout(function () {
+            uploader.initService(done);
+          }, 800);
+        } else {
+          uploader.initService(done);
+        }
+
       });
 
       after((done) => {
