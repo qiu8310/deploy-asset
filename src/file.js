@@ -437,25 +437,39 @@ export default class File {
     else if (this.type === File.STATIC_TYPE) ylog.verbose('*此文件类型不支持替换*');
     else if (!this.assets.length) ylog.verbose('*此文件没有依赖其它静态资源*');
     else {
+      let inline = this.opts.inline;
       this.remote.content = new Buffer(alter(this.remoteContentString, this.assets.map(asset => {
 
         let assetFilePath = asset.filePath;
-        let assetRemote = File.findFileInRefs(assetFilePath).remote;
-        let assetUrl;
+        let assetFile = File.findFileInRefs(assetFilePath),
+          assetRemote = assetFile.remote;
+        let assetUrl, assetBase64, mimeType = mime.lookup(assetFilePath);
 
-        // 这里需要依赖于 asset 的 url 和 basename
-        if (this.apply.absolute) {
-          assetUrl = assetRemote.url;
-        } else {
-          assetUrl = slash(path.relative(this.remote.relative, path.join(assetRemote.relative, assetRemote.basename)));
+        if (inline != null && /image/.test(mimeType)) {
+          if (inline === 0 || assetFile.content.length < inline) {
+            asset.inline = true;
+            assetBase64 = 'data:' + mimeType + ';base64,' + assetFile.content.toString('base64');
+            // assetFile.apply.upload = false; // 怕其它文件也依赖了这个文件，所以不能不上传
+            asset.target = assetBase64;
+          }
         }
 
-        if (asset.pattern.outFilter)
-          assetUrl = asset.pattern.outFilter(assetUrl);
+        if (!asset.target) {
+          // 这里需要依赖于 asset 的 url 和 basename
+          if (this.apply.absolute) {
+            assetUrl = assetRemote.url;
+          } else {
+            assetUrl = slash(path.relative(this.remote.relative, path.join(assetRemote.relative, assetRemote.basename)));
+          }
 
-        asset.target = assetUrl;
+          if (asset.pattern.outFilter)
+            assetUrl = asset.pattern.outFilter(assetUrl);
+
+          asset.target = assetUrl;
+        }
+
         result.push(asset);
-        return {start: asset.start, end: asset.end, str: assetUrl};
+        return {start: asset.start, end: asset.end, str: asset.target};
       })));
     }
 

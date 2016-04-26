@@ -91,6 +91,11 @@ export default function (any, opts, next) {
     let filePaths = _parseDaAnyArgument(any.length ? any : opts.rootDir);
     if (filePaths.length === 0) return next(new Error('NO_FILES'));
 
+    if (opts.inline) {
+      opts.inline = parseInt(opts.inline, 10);
+      if (opts.inline !== 0 && !opts.inline) opts.inline = DEFAULTS.INLINE;
+    }
+
     // 获取根目录
     let rootDir = opts.rootDir;
     if (!rootDir)

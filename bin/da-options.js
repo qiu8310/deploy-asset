@@ -296,6 +296,9 @@ module.exports = {
     + '\n  optimizationLevel: 0-7, 默认是 3'
     + '\n'
   },
+  inline: {
+    desc: '将小图片用 base64 压缩到 css 中, 此参数指定文件大小的域值，如果不指定具体值，则默认是 1024'
+  },
   minHtml: {
     alias: 'mh',
     desc: '压缩 HTML 的配置，请使用 mh.xx 的形式配置'

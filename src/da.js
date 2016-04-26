@@ -124,7 +124,8 @@ let DEFAULTS = {
   RUN_TO_STEP: 'upload',
   RENAME: '{prefix}{name}{hash}{suffix}',
   UPLOADER_NAME: 'qiniu',
-  HASH_PREFIX: '-'
+  HASH_PREFIX: '-',
+  INLINE: 1024
 };
 
 
