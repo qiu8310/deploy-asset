@@ -141,10 +141,9 @@ if (!uploader) {
 
 rcUploaderOpts = rcDaOpts.uploaders && rcDaOpts.uploaders[uploader] || rcDaOpts.uploaderOpts || {};
 rcUploaderDaOpts = rcUploaderOpts.options || {};
-
 delete rcDaOpts.uploaders;
 delete rcUploaderOpts.options;
-rcDaOpts = _.assign(rcUploaderDaOpts, rcDaOpts);
+rcDaOpts = _.assign(rcDaOpts, rcUploaderDaOpts);
 cliUploaderOpts = _.assign(rcUploaderOpts, cliUploaderOpts);
 
 Object.keys(options).forEach(function (key) {

@@ -10,7 +10,6 @@ import ylog from 'ylog';
 import path from 'x-path';
 import mime from 'mime';
 import slash from 'slash';
-import crypto from 'crypto';
 import _ from 'lodash';
 import alter from 'alter';
 import fs from 'fs-extra';
@@ -260,10 +259,9 @@ export default class File {
     let opts = this.opts;
     let hash = parseInt(opts.hash, 10);
     if (hash && hash > 0) {
-      let md5 = crypto.createHash('md5');
       let hashPrefix = 'hashPrefix' in opts ? opts.hashPrefix : opts.DEFAULTS.HASH_PREFIX;
-      md5.update(opts.hashSource === 'remote' ? this.remoteContentString : this.contentString);
-      hash = hashPrefix + md5.digest('hex').substr(0, hash);
+      let md5 = util.md5(opts.hashSource === 'remote' ? this.remoteContentString : this.contentString);
+      hash = hashPrefix + md5.substr(0, hash);
     } else {
       hash = '';
     }

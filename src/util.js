@@ -2,6 +2,7 @@ import minimatch from 'minimatch';
 import path from 'x-path';
 import ylog from 'ylog';
 import _ from 'lodash';
+import crypto from 'crypto';
 
 import FileType from './FileType';
 
@@ -78,6 +79,12 @@ function normalizeError(err) {
 
 
 export default {
+
+  md5(str) {
+    let hash = crypto.createHash('md5');
+    hash.update(str);
+    return hash.digest('hex');
+  },
 
   banner(title) {
     ylog.info.ln.ln.log('===============').title(`**${title}**`).log('===============').ln();
