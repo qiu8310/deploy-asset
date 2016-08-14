@@ -166,6 +166,10 @@ module.exports = {
     desc: '如果远程文件存在，是否覆盖远程文件',
     type: 'boolean'
   },
+  overwriteNoRenameFiles: {
+    desc: '如果指定了 noRenamePatterns，则其所包含的文件在上传时会强制覆盖远程的文件',
+    type: 'boolean'
+  },
   diff: {
     desc: '如果远程文件存在，是否和远程文件对比下，如果一样，则无需重新上传',
     type: 'boolean'

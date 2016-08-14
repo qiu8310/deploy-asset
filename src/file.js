@@ -580,7 +580,11 @@ export default class File {
   }
 
   _upload(callback) {
-    let {uploader, ignoreUploadError, ignoreExistsError, ignoreDiffError, overwrite, diff} = this.opts;
+    let {uploader, ignoreUploadError, overwriteNoRenameFiles, ignoreExistsError, ignoreDiffError, overwrite, diff} = this.opts;
+
+    if (overwriteNoRenameFiles && !this.apply.rename) {
+      overwrite = true
+    }
 
     if (!overwrite && !diff) {
       this._judgeExists(uploader, callback, () => {
