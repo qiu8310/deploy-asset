@@ -528,7 +528,11 @@ export default class File {
     });
   }
   _judgeConflict(uploader, error, success) {
+    let ended = false;
+
     uploader.getRemoteFileContent(this, (err, content) => {
+      if (ended) return ; // FtpUploader 有时会触发两次 end 事件
+      ended = true;
       if (err) return error(err);
 
       this.status.conflict = this.remote.content.compare(content) !== 0;
