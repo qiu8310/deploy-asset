@@ -204,6 +204,7 @@ da(argv._.length ? argv._ : (daOpts.rootDir ? daOpts.rootDir : cwd), daOpts, fun
     errorMessage += errorCn ? '   ' + errorCn : '';
     if (opts.stack) errorMessage += '\r\n' + err.stack;
     ylog.color('red').fatal(errorMessage);
+    process.exit(1);
 
   } else if (files.length) {
 
