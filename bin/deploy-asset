@@ -316,7 +316,8 @@ function writeToLocal(file, opts) {
     || file.shouldSave()
   ) {
     var dir = path.join(opts.rootDir, opts.outDir, file.remote.relative);
-    var fp = path.join(dir, file.remote.basename);
+    var fp = path.join(dir, opts.outFileName === 'local' ? file.basename : file.remote.basename);
+
     fs.ensureDirSync(dir);
     fs.writeFileSync(fp, file.remote.content);
     ylog.ok.no.tag.pad(4).writeOk('成功将 ^%s^ 文件的远程文件内容写入到 ^%s^ 文件', file.relativePath, fp);

@@ -234,6 +234,12 @@ module.exports = {
     requiresArg: true,
     type: 'string'
   },
+  outFileName: {
+    desc: '指定输出的文件名称',
+    choices: ['local', 'remote'],
+    default: 'remote',
+    type: 'string'
+  },
   outError: {
     desc: '输出上传失败的文件到指定的 outDir （必须先指定 outDir）',
     'default': true,
