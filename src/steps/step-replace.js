@@ -3,7 +3,7 @@ import dep from 'dep.js';
 import _ from 'lodash';
 
 import util from '../util';
-import File from '../File';
+import File from '../file';
 
 export default function (files, opts, next) {
 

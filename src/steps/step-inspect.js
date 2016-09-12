@@ -6,7 +6,7 @@ import min from 'min-asset';
 import pb from 'pretty-bytes';
 
 import util from '../util';
-import File from '../File';
+import File from '../file';
 
 function _getMinFileType(file) {
   if (file.type === File.STATIC_TYPE) {
