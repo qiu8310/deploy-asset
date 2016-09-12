@@ -300,6 +300,11 @@ module.exports = {
     requiresArg: true,
     type: 'string'
   },
+  config: {
+    desc: '给 rc 组件使用的一个配置，可以指定 .darc 文件的路径',
+    requiresArg: true,
+    type: 'string'
+  },
   minImage: {
     alias: 'mi',
     desc: '压缩图片的配置，请使用 mi.xx 的形式配置，配置项和 min-asset 一致，下同'
