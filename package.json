@@ -1,7 +1,7 @@
 {
   "name": "deploy-asset",
   "description": "对前端静态资源 Compress, Revisioning 以及 Uploading",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "homepage": "https://github.com/qiu8310/deploy-asset",
   "bugs": "https://github.com/qiu8310/deploy-asset/issues",
   "license": "MIT",
