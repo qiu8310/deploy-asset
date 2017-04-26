@@ -531,7 +531,7 @@ export default class File {
     let ended = false;
 
     uploader.getRemoteFileContent(this, (err, content) => {
-      if (ended) return ; // FtpUploader 有时会触发两次 end 事件
+      if (ended) return; // FtpUploader 有时会触发两次 end 事件
       ended = true;
       if (err) return error(err);
 

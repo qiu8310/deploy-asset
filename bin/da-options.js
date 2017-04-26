@@ -179,9 +179,11 @@ module.exports = {
     type: 'boolean'
   },
   min: {
+    // type: 'array', // 不能指定为 array 类型，否则只指定 --min 时无法获取
     alias: 'm',
-    desc: '是否要对所有上传的文件进行压缩',
-    type: 'boolean'
+    desc: '指定要进行压缩的文件类型（需要安装 min-asset 模块）；\n'
+          + '支持的类型有：image,html,js,css,json，如果不带任何参数，则压缩全部支持的文件；\n'
+          + '否则，压缩指定的文件；多个值用逗号隔开，如：`--min html,js`'
   },
   dry: {
     desc: '只输出运行结果，并不上传文件',
@@ -262,7 +264,6 @@ module.exports = {
           + '\n指定 map.noDomain 可以使得 da-map.json 文件不记录远程文件路径的域名'
           + '\n如果 map 是 Object，可以指定 map.file 来指定保存的文件名称',
   },
-
 
 
   '  日志': { desc: ' ' },

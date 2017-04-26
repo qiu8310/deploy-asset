@@ -2,29 +2,30 @@ import ylog from 'ylog';
 import async from 'async';
 import _ from 'lodash';
 import path from 'x-path';
-import min from 'min-asset';
+// import min from 'min-asset';
 import pb from 'pretty-bytes';
 
 import util from '../util';
 import File from '../file';
 
-function _getMinFileType(file) {
-  if (file.type === File.STATIC_TYPE) {
-    if (_.includes(['png', 'jpeg', 'jpg', 'gif', 'svg'], file.ext)) return 'image';
-  } else {
-    return file.type;
-  }
-}
+var min
+try {
+  min = require('min-asset') // 可选的插件（安装起来比较费劲）
+} catch (e) {}
 
 function _compress(file, done) {
-  let type = _getMinFileType(file);
+  let type = file.type === File.STATIC_TYPE ? min.helper.type(file.filePath) : file.type;
+  let minTypes = file.opts.min
   let minOpts = file.opts['min' + _.capitalize(type)];
+
   if (!type || minOpts === false) return done(null, file);
+  if (typeof minTypes === 'string') minTypes = minTypes.split(',')
+  if (Array.isArray(minTypes) && minTypes.length && minTypes.indexOf(type) < 0) return done(null, file)
 
   minOpts = minOpts || {};
 
   ylog.info.title('开始压缩文件 ^%s^ ...', file.relativePath);
-  min(file.content, type, minOpts, (err, data) => {
+  min(file.content, file.filePath, minOpts, (err, data) => {
 
     if (err) return done(err);
     let oz = data.originalSize, mz = data.minifiedSize;
@@ -42,7 +43,6 @@ function _compress(file, done) {
       ylog.info.writeOk('*文件已经最小了，不需要压缩（改变压缩配置看看）*').ln();
     }
     done(null, file);
-
   });
 }
 
@@ -84,12 +84,16 @@ export default function (filePaths, opts, next) {
       if (inspectedFiles.indexOf(file) >= 0) return done(null, []);
       inspectedFiles.push(file);
 
-      if (opts.min) {
+      if (opts.min && min) {
         _compress(file, (err, file) => {
           if (err) return done(err);
           _inspect(file, done);
         });
       } else {
+        if (opts.min) {
+          ylog.warn('需要安装 ~min-asset~ 才能使用压缩功能').ln()
+            .warn('注意：如果你是全局安装的 deploy-asset，那么请先执行 `cd ' + path.dirname(path.dirname(__dirname)) + '`').ln()
+        }
         _inspect(file, done);
       }
     };

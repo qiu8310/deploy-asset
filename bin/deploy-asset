@@ -39,8 +39,6 @@ var argv = require('./da-completion')(yargs)
   // .epilog('for more information, find our manual at http://example.com')
   .argv;
 
-
-
 var cwd = process.cwd();
 var rcDaOpts = require('rc')('da'); // 文件中的所有配置
 var cliDaOpts = {}; // 命令行上的所有配置
@@ -79,7 +77,6 @@ Object.keys(options).forEach(function (k) {
     cliDaOpts[k] = true;
   }
 });
-
 
 var cliUploaderOpts = cliDaOpts.uploaderOpts || {};
 if (typeof cliUploaderOpts === 'string') {
@@ -149,7 +146,6 @@ cliUploaderOpts = _.assign(rcUploaderOpts, cliUploaderOpts);
 Object.keys(options).forEach(function (key) {
   var opt = options[key] || {};
   var keys = opt.alias ? [].concat(opt.alias, key) : [key];
-
   // 合并配置文件和命令行上的选项
   if (['minHtml', 'minCss', 'minImage', 'minJs', 'minJson'].indexOf(key) >= 0) {
     if (key in cliDaOpts && cliDaOpts[key] === false) cliDaOpts[key] = false;

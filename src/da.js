@@ -128,8 +128,6 @@ let DEFAULTS = {
   INLINE: 1024
 };
 
-
-
 /**
  *
  * Deploy Asset
@@ -140,7 +138,6 @@ let DEFAULTS = {
  * @param {Function} [callback] - 部署成功的回调函数
  */
 function da(any, opts, callback) {
-
   if (typeof opts === 'function') [opts, callback] = [callback, opts];
 
   // 创建一个全新的对象，避免修改源头，
