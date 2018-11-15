@@ -31,7 +31,7 @@
   另外，也可以很容易扩展自己的 Uploader，[参考这里][uploaders]
 
 ## 常见问题
-
+* clone该项目之后,文件目录下面没有build文件，需要先运行`npm run build `生成`build`目录,然后才能正常运行`dar --spa=index.html `命令
 * HTML 放在后端，CSS/JS 放在静态服务器上，同时 CSS 中的图片也能放到静态服务器上，但 HTML 中的图片放哪？
 
 >
